@@ -8,37 +8,61 @@ defineProps({
 });
 
 // data
-const selectedLink = ref(0);
 const links = ref([
   {
     text: "Dashboard",
     icon: "fa-solid fa-bars",
-    path: "",
+    path: "admin.dashboard",
   },
   {
     text: "Products",
     icon: "fa-solid fa-cubes-stacked",
-    path: "",
+    path: "admin.products",
   },
   {
     text: "Users",
     icon: "fa-solid fa-users",
-    path: "",
+    path: "admin.users",
   },
 ]);
 
 // methods
 const logout = () => {
-  router.post(route("logout"));
+  Swal.fire({
+    title: "Logout",
+    text: "Are you sure to logout?",
+    icon: "question",
+    showConfirmButton: true,
+    showCancelButton: true,
+    confirmButtonText: 'Logout',
+    cancelButtonText: 'Cancel',
+    allowOutsideClick: false,
+    customClass: 'default'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        title: "you are logging out...",
+        icon: "success",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        allowOutsideClick: false
+      }).then((result) => {
+        if (result.dismiss === Swal.DismissReason.timer) {
+          router.post(route("logout"));
+        }
+      });
+    }
+  });
 };
 
-const onHandleSelectedLink = (index) => {
-  selectedLink.value = index;
+const onHandleSelectedLink = (link, index) => {
+  router.get(route(link.path));
 };
 
-const listStyle = (idx, selectedIdx) => {
-    return (idx === selectedIdx) ? "active" : null;
-}
+const listStyle = (link, pageTitle) => {
+  return link.text === pageTitle ? "active" : null;
+};
 
 // hooks
 </script>
@@ -50,22 +74,15 @@ const listStyle = (idx, selectedIdx) => {
       <div class="logo"></div>
       <div class="pages">
         <ul>
-          <li :class="listStyle(index, selectedLink)" v-for="(link, index) in links" :key="index" @click.prevent="onHandleSelectedLink(index)">
+          <li
+            :class="listStyle(link, title)"
+            v-for="(link, index) in links"
+            :key="index"
+            @click.prevent="onHandleSelectedLink(link)"
+          >
             <i :class="link.icon"></i>
             <span>{{ link.text }}</span>
           </li>
-          <!-- <li>
-                    <i class="fa-solid fa-bars"></i>
-                    <span>Dashboard</span>
-                </li>
-                <li>
-                    <i class="fa-solid fa-bars"></i>
-                    <span>Dashboard</span>
-                </li>
-                <li>
-                    <i class="fa-solid fa-bars"></i>
-                    <span>Dashboard</span>
-                </li> -->
         </ul>
       </div>
     </div>
@@ -79,7 +96,7 @@ const listStyle = (idx, selectedIdx) => {
           </div>
           <div class="accountSettings">
             <ul>
-              <li>
+              <li @click.prevent="logout">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 <span>Logout</span>
               </li>
@@ -96,9 +113,5 @@ const listStyle = (idx, selectedIdx) => {
         </main>
       </div>
     </div>
-    <!-- <h1>AdminLayout</h1> -->
-    <!-- <form method="POST" @submit.prevent="logout">
-      <ResponsiveNavLink as="button"> Log Out </ResponsiveNavLink>
-    </form> -->
   </div>
 </template>
