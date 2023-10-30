@@ -18,14 +18,14 @@ use Inertia\Inertia;
 |
 */
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+// Route::get('/', function () {
+//     return Inertia::render('Welcome', [
+//         'canLogin' => Route::has('login'),
+//         'canRegister' => Route::has('register'),
+//         'laravelVersion' => Application::VERSION,
+//         'phpVersion' => PHP_VERSION,
+//     ]);
+// });
 
 Route::middleware([
     'auth:sanctum',
@@ -33,6 +33,15 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products');
+    // Route::get('/admin/products', [ProductController::class, 'index'])->name('admin.products');
+    Route::prefix('admin')->group(function () {
+        Route::prefix('products')->group(function () {
+            Route::get('/', [ProductController::class,'index'])->name('products.index');
+            Route::post('/store', [ProductController::class,'store'])->name('product.store');
+            Route::post('/update', [ProductController::class,'update'])->name('product.update');
+            Route::post('/delete', [ProductController::class,'remove'])->name('product.delete');
+        });
+    });
+
     Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users');
 });

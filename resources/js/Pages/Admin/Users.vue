@@ -4,8 +4,9 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 
 <template>
   <AdminLayout title="Users">
-    <div class="page">
+    <h1>Users</h1>
+    <!-- <div class="page">
       <h1><i class="fa-brands fa-twitter"></i> Users</h1>
-    </div>
+    </div> -->
   </AdminLayout>
 </template>

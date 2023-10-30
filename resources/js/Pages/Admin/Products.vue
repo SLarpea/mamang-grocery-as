@@ -1,164 +1,283 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import Modal from "@/Components/Admin/Modal.vue";
-import { ref } from "vue";
+import { reactive, ref } from "vue";
+import { useForm } from "@inertiajs/vue3";
+
+const APP_URL = import.meta.env.VITE_APP_URL;
+
+const props = defineProps({
+  products: Object,
+  message: String,
+});
 
 const showModal = ref(false);
 const modalMode = ref("default");
-const iconMode = ref({
-    add: 'fa-regular fa-square-plus',
-    edit: 'fa-solid fa-pen',
-    delete: 'fa-solid fa-xmark'
-})
 const previewImage = ref("");
+const search = ref("");
+const itemsPerPage = ref(5);
+const loading = ref(false);
+const headers = ref([
+  {
+    title: "Id",
+    align: "start",
+    key: "id",
+  },
+  {
+    title: "Name",
+    align: "start",
+    key: "name",
+  },
+  {
+    title: "Image",
+    align: "start",
+    key: "thumbnail",
+    sortable: false,
+  },
+  {
+    title: "Price",
+    align: "start",
+    key: "price",
+  },
+  {
+    title: "Action",
+    align: "start",
+    key: "actions",
+    sortable: false
+  },
+]);
+const actions = reactive({
+  add: {
+    icon: "fa-regular fa-square-plus",
+    method: "post",
+    path: "product.store",
+    action: "saved",
+  },
+  edit: {
+    icon: "fa-solid fa-pen",
+    method: "post",
+    path: "product.update",
+    action: "updated",
+  },
+  delete: {
+    icon: "fa-solid fa-xmark",
+    method: "post",
+    path: "product.delete",
+    action: "removed",
+  },
+});
+const form = useForm({
+  id: null,
+  name: null,
+  file: null,
+  price: null,
+  img_link: null,
+});
 
-const openModal = (mode) => {
-    modalMode.value = mode
-    showModal.value = true
+const openModal = (mode, id = null) => {
+  if (mode !== "add") setFormValue(id);
+  modalMode.value = mode;
+  showModal.value = true;
+  // console.log(form)
 };
 
 const onImagePreview = (e) => {
-    const file = e.target.files[0];
-    previewImage.value = URL.createObjectURL(file);
-}
+  form.file = e.target.files[0];
+  previewImage.value = URL.createObjectURL(form.file);
+};
 
+const submitForm = (mode) => {
+  form.submit(actions[mode].method, route(actions[mode].path), {
+    onSuccess: (response) => {
+      if (response.props.message === "success") {
+        modalMode.value = "default";
+        showModal.value = false;
+        showToast(form.name.toUpperCase(), actions[mode].action);
+        form.reset();
+        previewImage.value = "";
+      }
+    },
+  });
+};
+
+const setFormValue = (id) => {
+  const product = props.products.data.find((item) => item.id === id);
+  form.id = id;
+  form.name = product.name;
+  form.price = product.price;
+  form.img_link = product.img_link;
+  previewImage.value = product.img_link;
+};
+
+const showToast = (productName, action) => {
+  Swal.fire({
+    title: `Product ${productName} has been ${action}`,
+    icon: "success",
+    showConfirmButton: false,
+    timer: 3000,
+  });
+};
+
+const closeModal = () => {
+  showModal.value = false;
+  form.reset();
+  previewImage.value = "";
+};
+
+const loadItems = ({ page, itemsPerPage, sortBy }) => {
+  loading.value = false;
+};
 </script>
 
 <template>
   <AdminLayout title="Products">
-    <div class="page">
-      <div class="wrapper">
-        <button class="addBtn" @click.prevent="openModal('add')">
-          <i class="fa-regular fa-square-plus"></i>
-          <span>Add Product</span>
-        </button>
-        <div class="tableContent">
-          <table class="styled-table">
-            <thead>
-              <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Image</th>
-                <th>Price</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>Yogurt</td>
-                <td>Wala pa e</td>
-                <td>Mahal</td>
+    <div class="wrapper">
+      <v-sheet
+        class="products p-5"
+        height="auto"
+        width="100%"
+        style="
+          box-shadow: rgba(0, 0, 0, 0.15) 0 0.3rem 0.2rem 0;
+          border-bottom: 0.3rem solid #6a1b9a;
+        "
+        border
+        rounded
+      >
+        <v-row
+          style="
+            height: 5rem;
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.3rem;
+          "
+          no-gutters
+        >
+          <v-col cols="11">
+            <span class="card-title">Products</span>
+            <span class="card-subtitle">All grocery products are here.</span>
+          </v-col>
+          <v-col cols="1" class="text-right">
+            <v-btn
+              size="small"
+              color="add-bg-button-color"
+              prepend-icon="fa-solid fa-circle-plus"
+            >
+              add product
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-row no-gutters>
+          <v-col cols="12">
+            <v-data-table
+              v-model:items-per-page="itemsPerPage"
+              :search="search"
+              :headers="headers"
+              :items-length="props.total"
+              :items="props.products.data"
+              :loading="loading"
+              class="elevation-1 table"
+              item-value="name"
+              loading-text="Loading... Please wait"
+            >
+              <template v-slot:top>
+                <v-text-field
+                  v-model="search"
+                  label="Search (UPPER CASE ONLY)"
+                  color="primary"
+                  class="pa-4"
+                ></v-text-field>
+              </template>
+              <template v-slot:item.actions="{ item }">
+                <v-icon icon="fa-solid fa-pen" size="small" class="me-2" color="edit-bg-button-color" @click="loading = !loading"></v-icon>
+                <v-icon icon="fa-solid fa-trash" size="small" color="delete-bg-button-color" @click.prevent="openModal('delete', item.id)"></v-icon>
+              </template>
+              <template v-slot:item.name="{ item }">
+                <td style="font-weight: 600;text-transform:capitalize">{{ item.name }}</td>
+              </template>
+              <template v-slot:item.price="{ item }">
+                <td style="font-weight: 600;color:#388E3C">PHP {{ item.price }}</td>
+              </template>
+              <template v-slot:item.thumbnail="{ item }">
                 <td>
-                  <button class="editBtn">
-                    <i class="fa-solid fa-pen"></i>
-                  </button>
-                  <button class="deleteBtn">
-                    <i class="fa-solid fa-xmark"></i>
-                  </button>
+                  <div class="imageThumb">
+                    <img :src="APP_URL + item.img_link" alt="previewImg" />
+                  </div>
                 </td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>Biskwit</td>
-                <td>Wala pa e</td>
-                <td>Mahal</td>
-                <td>wait lang</td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>Watah</td>
-                <td>Wala pa e</td>
-                <td>Mahal</td>
-                <td>wait lang</td>
-              </tr>
-              <tr>
-                <td>4</td>
-                <td>Sittsirya</td>
-                <td>Wala pa e</td>
-                <td>Mahal</td>
-                <td>wait lang</td>
-              </tr>
-              <tr>
-                <td>5</td>
-                <td>Tsokoleyt</td>
-                <td>Wala pa e</td>
-                <td>Mahal</td>
-                <td>wait lang</td>
-              </tr>
-              <tr>
-                <td>6</td>
-                <td>Nido</td>
-                <td>Wala pa e</td>
-                <td>Mahal</td>
-                <td>wait lang</td>
-              </tr>
-              <tr>
-                <td>7</td>
-                <td>Bigas</td>
-                <td>Wala pa e</td>
-                <td>Mahal</td>
-                <td>wait lang</td>
-              </tr>
-              <tr>
-                <td>8</td>
-                <td>Sardinas</td>
-                <td>Wala pa e</td>
-                <td>Mahal</td>
-                <td>wait lang</td>
-              </tr>
-              <tr>
-                <td>9</td>
-                <td>Seypgard</td>
-                <td>Wala pa e</td>
-                <td>Mahal</td>
-                <td>wait lang</td>
-              </tr>
-              <tr>
-                <td>10</td>
-                <td>joy</td>
-                <td>Wala pa e</td>
-                <td>Mahal</td>
-                <td>wait lang</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="paginationContent">
-          <div class="paginationWrapper"></div>
-        </div>
-      </div>
+              </template>
+            </v-data-table>
+          </v-col>
+        </v-row>
+      </v-sheet>
     </div>
-    <Modal v-if="showModal" :mode="modalMode" :imgSrc="previewImage" @submit="showModal = false" @cancel="showModal = false">
+    <v-dialog class="dialog" v-model="showModal" width="50rem" persistent>
+      <Modal
+      :mode="modalMode"
+      :imgSrc="previewImage"
+      @submit="submitForm(modalMode)"
+      @cancel="closeModal()"
+      >
         <template #header>
-            <span>{{ modalMode }} product</span>
+          <span class="card-title">{{ modalMode }} product</span>
         </template>
 
-        <template #body>
-            <div class="inputWrapper">
-                <span>Name:</span>
-                <div class="input">
-                    <input type="text" placeholder="Enter product name" />
-                </div>
-            </div>
-            <div class="inputWrapper">
-                <span>Image:</span>
-                <div class="file">
-                    <input type="file" @change="onImagePreview" />
-                </div>
-            </div>
-            <div class="inputWrapper">
-                <span>Price:</span>
-                <div class="input">
-                    <input type="text" placeholder="Enter price" />
-                </div>
-            </div>
-        </template>
+        <template #confirm-btn-text>
 
-        <template #button-confirm-text>
-            <i :class="iconMode[modalMode]"></i>
-            {{ modalMode }}
         </template>
-    </Modal>
+      </Modal>
+    </v-dialog>
+    <!-- <Modal
+      v-if="showModal"
+      :mode="modalMode"
+      :imgSrc="previewImage"
+      @submit="submitForm(modalMode)"
+      @cancel="closeModal()"
+    >
+      <template #header>
+        <span>{{ modalMode }} product</span>
+      </template>
+
+      <template #body>
+        <div v-if="modalMode === 'delete'">
+          <span class="deletePromptTitle"
+            >Are you sure to delete this
+            <strong>{{ form.name.toUpperCase() }}</strong> product?</span
+          >
+          <span class="deletePromptSubTitle"
+            >You won't be able to revert this!</span
+          >
+        </div>
+        <div v-if="modalMode !== 'delete'" class="inputWrapper">
+          <span>Name:</span>
+          <div class="input">
+            <input
+              type="text"
+              v-model="form.name"
+              placeholder="Enter product name"
+            />
+          </div>
+        </div>
+        <div v-if="modalMode !== 'delete'" class="inputWrapper">
+          <span>Image:</span>
+          <div class="file">
+            <input
+              type="file"
+              @change="onImagePreview"
+              accept=".jpg, .jpeg, .png"
+            />
+          </div>
+        </div>
+        <div v-if="modalMode !== 'delete'" class="inputWrapper">
+          <span>Price:</span>
+          <div class="input">
+            <input type="text" v-model="form.price" placeholder="Enter price" />
+          </div>
+        </div>
+      </template>
+
+      <template #button-confirm-text>
+        <i :class="actions[modalMode].icon"></i>
+        {{ modalMode }}
+      </template>
+    </Modal> -->
   </AdminLayout>
 </template>

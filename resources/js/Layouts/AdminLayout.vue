@@ -8,6 +8,7 @@ defineProps({
 });
 
 // data
+const nav = ref(true);
 const links = ref([
   {
     text: "Dashboard",
@@ -17,7 +18,7 @@ const links = ref([
   {
     text: "Products",
     icon: "fa-solid fa-cubes-stacked",
-    path: "admin.products",
+    path: "products.index",
   },
   {
     text: "Users",
@@ -34,10 +35,10 @@ const logout = () => {
     icon: "question",
     showConfirmButton: true,
     showCancelButton: true,
-    confirmButtonText: 'Logout',
-    cancelButtonText: 'Cancel',
+    confirmButtonText: "Logout",
+    cancelButtonText: "Cancel",
     allowOutsideClick: false,
-    customClass: 'default'
+    customClass: "default",
   }).then((result) => {
     if (result.isConfirmed) {
       Swal.fire({
@@ -46,7 +47,7 @@ const logout = () => {
         showConfirmButton: false,
         timer: 2000,
         timerProgressBar: true,
-        allowOutsideClick: false
+        allowOutsideClick: false,
       }).then((result) => {
         if (result.dismiss === Swal.DismissReason.timer) {
           router.post(route("logout"));
@@ -68,21 +69,72 @@ const listStyle = (link, pageTitle) => {
 </script>
 
 <template>
-  <div class="main">
+  <v-layout>
+    <Head :title="title" />
+    <v-navigation-drawer v-model="nav" color="primary-bg-color">
+      <v-list-item title="Mamang Grocery" subtitle="An E-commerce Grocery Store" height="64"></v-list-item>
+      <hr>
+      <ul>
+        <Link
+          v-for="(link, index) in links"
+          :key="index"
+          :href="route(link.path)"
+          :class="['link', { active: link.text === title }]"
+          method="get"
+        >
+          <i :class="link.icon"></i>
+          <span>{{ link.text }}</span>
+        </Link>
+      </ul>
+      <template v-slot:append>
+        <hr>
+        <div class="nav-footer">
+          <span>&copy; Copyright 2023 <strong>Mamang Grocery</strong></span>
+          <span>version 1.0</span>
+        </div>
+      </template>
+    </v-navigation-drawer>
+
+    <v-app-bar color="primary-bg-color">
+      <v-app-bar-nav-icon @click="nav = !nav"></v-app-bar-nav-icon>
+      <v-app-bar-title>{{ title }}</v-app-bar-title>
+      <template v-slot:append>
+        <v-menu>
+          <template v-slot:activator="{ props }">
+            <v-btn icon="fa-solid fa-user" v-bind="props"></v-btn>
+          </template>
+          <v-sheet height="auto" :width="150" style="padding: .5rem 0">
+            <ul>
+              <li class="logout" @click="logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+              </li>
+            </ul>
+          </v-sheet>
+        </v-menu>
+      </template>
+    </v-app-bar>
+
+    <v-main style="min-height: 100vh;background: #E0E0E0">
+      <slot />
+    </v-main>
+  </v-layout>
+  <!-- <div class="main">
     <Head :title="title" />
     <div class="sidebar">
       <div class="logo"></div>
       <div class="pages">
         <ul>
-          <li
-            :class="listStyle(link, title)"
-            v-for="(link, index) in links"
-            :key="index"
-            @click.prevent="onHandleSelectedLink(link)"
+          <Link
+          v-for="(link, index) in links"
+          :key="index"
+          :href="route(link.path)"
+          :class="['link', { 'active': link.text === title }]"
+          method="get"
           >
             <i :class="link.icon"></i>
             <span>{{ link.text }}</span>
-          </li>
+          </Link>
         </ul>
       </div>
     </div>
@@ -113,5 +165,5 @@ const listStyle = (link, pageTitle) => {
         </main>
       </div>
     </div>
-  </div>
+  </div> -->
 </template>

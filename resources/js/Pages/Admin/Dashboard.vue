@@ -4,8 +4,9 @@ import AdminLayout from "@/Layouts/AdminLayout.vue";
 
 <template>
   <AdminLayout title="Dashboard">
-    <div class="page">
+    <h1>Dashboard</h1>
+    <!-- <div class="page">
       <h1><i class="fa-brands fa-twitter"></i> Domo</h1>
-    </div>
+    </div> -->
   </AdminLayout>
 </template>
