@@ -43,7 +43,7 @@ const headers = ref([
     title: "Action",
     align: "start",
     key: "actions",
-    sortable: false
+    sortable: false,
   },
 ]);
 const actions = reactive({
@@ -161,6 +161,7 @@ const loadItems = ({ page, itemsPerPage, sortBy }) => {
               size="small"
               color="add-bg-button-color"
               prepend-icon="fa-solid fa-circle-plus"
+              @click="openModal('add')"
             >
               add product
             </v-btn>
@@ -183,19 +184,35 @@ const loadItems = ({ page, itemsPerPage, sortBy }) => {
                 <v-text-field
                   v-model="search"
                   label="Search (UPPER CASE ONLY)"
-                  color="primary"
+                  color="primary-bg-color"
                   class="pa-4"
+                  variant="outlined"
                 ></v-text-field>
               </template>
               <template v-slot:item.actions="{ item }">
-                <v-icon icon="fa-solid fa-pen" size="small" class="me-2" color="edit-bg-button-color" @click="loading = !loading"></v-icon>
-                <v-icon icon="fa-solid fa-trash" size="small" color="delete-bg-button-color" @click.prevent="openModal('delete', item.id)"></v-icon>
+                <v-icon
+                  icon="fa-solid fa-pen"
+                  size="small"
+                  class="me-2"
+                  color="edit-bg-button-color"
+                  @click="loading = !loading"
+                ></v-icon>
+                <v-icon
+                  icon="fa-solid fa-trash"
+                  size="small"
+                  color="delete-bg-button-color"
+                  @click.prevent="openModal('delete', item.id)"
+                ></v-icon>
               </template>
               <template v-slot:item.name="{ item }">
-                <td style="font-weight: 600;text-transform:capitalize">{{ item.name }}</td>
+                <td style="font-weight: 600; text-transform: capitalize">
+                  {{ item.name }}
+                </td>
               </template>
               <template v-slot:item.price="{ item }">
-                <td style="font-weight: 600;color:#388E3C">PHP {{ item.price }}</td>
+                <td style="font-weight: 600; color: #388e3c">
+                  PHP {{ item.price }}
+                </td>
               </template>
               <template v-slot:item.thumbnail="{ item }">
                 <td>
@@ -211,18 +228,53 @@ const loadItems = ({ page, itemsPerPage, sortBy }) => {
     </div>
     <v-dialog class="dialog" v-model="showModal" width="50rem" persistent>
       <Modal
-      :mode="modalMode"
-      :imgSrc="previewImage"
-      @submit="submitForm(modalMode)"
-      @cancel="closeModal()"
+        :mode="modalMode"
+        :imgSrc="previewImage"
+        @submit="submitForm(modalMode)"
+        @cancel="closeModal()"
       >
         <template #header>
           <span class="card-title">{{ modalMode }} product</span>
         </template>
 
-        <template #confirm-btn-text>
-
+        <template #body>
+          <v-img
+            v-if="previewImage"
+            class="bg-white mb-5 mx-auto"
+            width="300"
+            :aspect-ratio="1"
+            :src="previewImage"
+            cover
+          ></v-img>
+          <v-text-field
+            v-model="form.name"
+            label="Name"
+            variant="outlined"
+            color="primary-bg-color"
+            @click:clear="form.name = null"
+            clearable
+          ></v-text-field>
+          <v-file-input
+            label="Select Image"
+            variant="outlined"
+            color="primary-bg-color"
+            prepend-icon=""
+            density="compact"
+            @change="onImagePreview"
+            @click:clear="previewImage = ''"
+            clearable
+          ></v-file-input>
+          <v-text-field
+            v-model="form.price"
+            label="Price"
+            variant="outlined"
+            color="primary-bg-color"
+            @click:clear="form.price = null"
+            clearable
+          ></v-text-field>
         </template>
+
+        <template #confirm-btn-text> </template>
       </Modal>
     </v-dialog>
     <!-- <Modal

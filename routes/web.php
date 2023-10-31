@@ -45,3 +45,7 @@ Route::middleware([
 
     Route::get('/admin/users', [UserController::class, 'index'])->name('admin.users');
 });
+
+Route::get('phpinfo', function () {
+    echo phpinfo();
+});

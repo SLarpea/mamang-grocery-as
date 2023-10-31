@@ -71,7 +71,7 @@ const submitBtnText = (mode) => {
 </script>
 
 <template>
-  <v-card elevation="2" style="border-top: .3rem solid #6A1B9A;">
+  <v-card elevation="2" style="border-top: .3rem solid #6A1B9A;padding-top: .8rem;">
     <v-card-title>
       <slot name="header"> Default Header </slot>
     </v-card-title>
