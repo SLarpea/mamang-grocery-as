@@ -259,6 +259,23 @@ input[type="file"] {
     padding: 1rem 0;
 }
 
+.deletePromptTitle {
+    display: block;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.deletePromptSubTitle {
+    display: block;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 300;
+    font-style: italic;
+    color: #C62828;
+}
+
 .dialog {
     .card-title {
         font-size: 2rem;

@@ -78,7 +78,6 @@ const openModal = (mode, id = null) => {
   if (mode !== "add") setFormValue(id);
   modalMode.value = mode;
   showModal.value = true;
-  // console.log(form)
 };
 
 const onImagePreview = (e) => {
@@ -120,13 +119,14 @@ const showToast = (productName, action) => {
 
 const closeModal = () => {
   showModal.value = false;
-  form.reset();
   previewImage.value = "";
+  form.reset();
 };
 
-const loadItems = ({ page, itemsPerPage, sortBy }) => {
-  loading.value = false;
+const imgPath = (imageSrc) => {
+  return imageSrc.includes("blob") ? imageSrc : APP_URL + imageSrc;
 };
+
 </script>
 
 <template>
@@ -195,7 +195,7 @@ const loadItems = ({ page, itemsPerPage, sortBy }) => {
                   size="small"
                   class="me-2"
                   color="edit-bg-button-color"
-                  @click="loading = !loading"
+                  @click="openModal('edit', item.id)"
                 ></v-icon>
                 <v-icon
                   icon="fa-solid fa-trash"
@@ -243,10 +243,20 @@ const loadItems = ({ page, itemsPerPage, sortBy }) => {
             class="bg-white mb-5 mx-auto"
             width="300"
             :aspect-ratio="1"
-            :src="previewImage"
+            :src="imgPath(previewImage)"
             cover
           ></v-img>
+          <div v-if="modalMode === 'delete'">
+            <span class="deletePromptTitle"
+              >Are you sure to delete this
+              <strong>{{ form.name?.toUpperCase() }}</strong> product?</span
+            >
+            <span class="deletePromptSubTitle"
+              >You won't be able to revert this!</span
+            >
+          </div>
           <v-text-field
+            v-if="modalMode !== 'delete'"
             v-model="form.name"
             label="Name"
             variant="outlined"
@@ -255,6 +265,7 @@ const loadItems = ({ page, itemsPerPage, sortBy }) => {
             clearable
           ></v-text-field>
           <v-file-input
+            v-if="modalMode !== 'delete'"
             label="Select Image"
             variant="outlined"
             color="primary-bg-color"
@@ -265,6 +276,7 @@ const loadItems = ({ page, itemsPerPage, sortBy }) => {
             clearable
           ></v-file-input>
           <v-text-field
+            v-if="modalMode !== 'delete'"
             v-model="form.price"
             label="Price"
             variant="outlined"
@@ -277,59 +289,5 @@ const loadItems = ({ page, itemsPerPage, sortBy }) => {
         <template #confirm-btn-text> </template>
       </Modal>
     </v-dialog>
-    <!-- <Modal
-      v-if="showModal"
-      :mode="modalMode"
-      :imgSrc="previewImage"
-      @submit="submitForm(modalMode)"
-      @cancel="closeModal()"
-    >
-      <template #header>
-        <span>{{ modalMode }} product</span>
-      </template>
-
-      <template #body>
-        <div v-if="modalMode === 'delete'">
-          <span class="deletePromptTitle"
-            >Are you sure to delete this
-            <strong>{{ form.name.toUpperCase() }}</strong> product?</span
-          >
-          <span class="deletePromptSubTitle"
-            >You won't be able to revert this!</span
-          >
-        </div>
-        <div v-if="modalMode !== 'delete'" class="inputWrapper">
-          <span>Name:</span>
-          <div class="input">
-            <input
-              type="text"
-              v-model="form.name"
-              placeholder="Enter product name"
-            />
-          </div>
-        </div>
-        <div v-if="modalMode !== 'delete'" class="inputWrapper">
-          <span>Image:</span>
-          <div class="file">
-            <input
-              type="file"
-              @change="onImagePreview"
-              accept=".jpg, .jpeg, .png"
-            />
-          </div>
-        </div>
-        <div v-if="modalMode !== 'delete'" class="inputWrapper">
-          <span>Price:</span>
-          <div class="input">
-            <input type="text" v-model="form.price" placeholder="Enter price" />
-          </div>
-        </div>
-      </template>
-
-      <template #button-confirm-text>
-        <i :class="actions[modalMode].icon"></i>
-        {{ modalMode }}
-      </template>
-    </Modal> -->
   </AdminLayout>
 </template>
