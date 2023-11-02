@@ -103,6 +103,7 @@ class ProductController extends Controller
 
     private function createProductImagesDirectory()
     {
+        if (!Storage::disk('local')->exists('/products')) Storage::disk('local')->makeDirectory('/products');
         if (!Storage::disk('products')->exists('/desk')) Storage::disk('products')->makeDirectory('/desk');
         if (!Storage::disk('products')->exists('/m')) Storage::disk('products')->makeDirectory('/m');
     }

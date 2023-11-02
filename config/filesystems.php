@@ -52,6 +52,14 @@ return [
             'throw' => false,
         ],
 
+        'categories' => [
+            'driver' => 'local',
+            'root' => storage_path('app/categories'),
+            'url' => env('APP_URL').'/categories',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
@@ -80,6 +88,7 @@ return [
     'links' => [
         // public_path('storage') => storage_path('app/public'),
         public_path('products') => storage_path('app/products'),
+        public_path('categories') => storage_path('app/categories'),
     ],
 
 ];

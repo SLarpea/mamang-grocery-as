@@ -21,6 +21,11 @@ const links = ref([
     path: "products.index",
   },
   {
+    text: "Categories",
+    icon: "fa-solid fa-layer-group",
+    path: "categories.index"
+  },
+  {
     text: "Users",
     icon: "fa-solid fa-users",
     path: "admin.users",

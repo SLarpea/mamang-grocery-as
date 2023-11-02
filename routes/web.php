@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
@@ -40,6 +41,13 @@ Route::middleware([
             Route::post('/store', [ProductController::class,'store'])->name('product.store');
             Route::post('/update', [ProductController::class,'update'])->name('product.update');
             Route::post('/delete', [ProductController::class,'remove'])->name('product.delete');
+        });
+        
+        Route::prefix('categories')->group(function () {
+            Route::get('/', [CategoryController::class,'index'])->name('categories.index');
+            Route::post('/store', [CategoryController::class,'store'])->name('category.store');
+            Route::post('/update', [CategoryController::class,'update'])->name('category.update');
+            Route::post('/delete', [CategoryController::class,'remove'])->name('category.delete');
         });
     });
 

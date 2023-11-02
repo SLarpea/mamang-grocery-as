@@ -13,17 +13,24 @@ class Product extends Model
     protected $fillable = [
         "name",
         "img_link",
-        "price"
+        "price",
+        "categories"
     ];
 
     public function getAllProducts() 
     {
-        return $this->paginate(10);
+        return $this->all();
     }
 
     public function create(array $data) 
     {
         foreach ($data as $key => $value) {
+
+            if ($key === 'categories') {
+                $this[$key] = json_encode($value);
+                continue;
+            }
+
             $this[$key] = $value;
         }
 
@@ -35,6 +42,12 @@ class Product extends Model
         $product = $this->where("id", $id)->first();
 
         foreach ($data as $key => $value) {
+
+            if ($key === 'categories') {
+                $product[$key] = json_encode($value);
+                continue;
+            }
+
             $product[$key] = $value;
         }
 

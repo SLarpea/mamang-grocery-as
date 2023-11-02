@@ -4,19 +4,45 @@ import Modal from "@/Components/Admin/Modal.vue";
 import { reactive, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
-const APP_URL = import.meta.env.VITE_APP_URL;
-
 const props = defineProps({
-  products: Array,
-  message: String,
-});
+    categories: Array,
+    message: String
+})
 
+const APP_URL = import.meta.env.VITE_APP_URL;
 const showModal = ref(false);
 const modalMode = ref("default");
 const previewImage = ref("");
 const search = ref("");
 const itemsPerPage = ref(6);
 const loading = ref(false);
+const form = useForm({
+  id: null,
+  name: null,
+  description: null,
+  file: null,
+  is_active: true,
+});
+const actions = reactive({
+  add: {
+    icon: "fa-regular fa-square-plus",
+    method: "post",
+    path: "category.store",
+    action: "saved",
+  },
+  edit: {
+    icon: "fa-solid fa-pen",
+    method: "post",
+    path: "category.update",
+    action: "updated",
+  },
+  delete: {
+    icon: "fa-solid fa-xmark",
+    method: "post",
+    path: "category.delete",
+    action: "removed",
+  },
+});
 const headers = ref([
   {
     title: "Id",
@@ -35,9 +61,10 @@ const headers = ref([
     sortable: false,
   },
   {
-    title: "Price",
+    title: "Description",
     align: "start",
-    key: "price",
+    key: "description",
+    scrollable: false
   },
   {
     title: "Action",
@@ -46,33 +73,6 @@ const headers = ref([
     sortable: false,
   },
 ]);
-const actions = reactive({
-  add: {
-    icon: "fa-regular fa-square-plus",
-    method: "post",
-    path: "product.store",
-    action: "saved",
-  },
-  edit: {
-    icon: "fa-solid fa-pen",
-    method: "post",
-    path: "product.update",
-    action: "updated",
-  },
-  delete: {
-    icon: "fa-solid fa-xmark",
-    method: "post",
-    path: "product.delete",
-    action: "removed",
-  },
-});
-const form = useForm({
-  id: null,
-  name: null,
-  file: null,
-  price: null,
-  img_link: null,
-});
 
 const openModal = (mode, id = null) => {
   if (mode !== "add") setFormValue(id);
@@ -80,9 +80,19 @@ const openModal = (mode, id = null) => {
   showModal.value = true;
 };
 
+const closeModal = () => {
+  showModal.value = false;
+  previewImage.value = "";
+  form.reset();
+};
+
 const onImagePreview = (e) => {
   form.file = e.target.files[0];
   previewImage.value = URL.createObjectURL(form.file);
+};
+
+const imgPath = (imageSrc) => {
+  return imageSrc.includes("blob") ? imageSrc : APP_URL + imageSrc;
 };
 
 const submitForm = (mode) => {
@@ -100,12 +110,12 @@ const submitForm = (mode) => {
 };
 
 const setFormValue = (id) => {
-  const product = props.products.find((item) => item.id === id);
+  const category = props.categories.find((item) => item.id === id);
   form.id = id;
-  form.name = product.name;
-  form.price = product.price;
-  form.img_link = product.img_link;
-  previewImage.value = product.img_link;
+  form.name = category.name;
+  form.description = category.description;
+  form.logo_path = category.logo_path;
+  previewImage.value = category.logo_path;
 };
 
 const showToast = (productName, action) => {
@@ -119,23 +129,12 @@ const showToast = (productName, action) => {
   });
 };
 
-const closeModal = () => {
-  showModal.value = false;
-  previewImage.value = "";
-  form.reset();
-};
-
-const imgPath = (imageSrc) => {
-  return imageSrc.includes("blob") ? imageSrc : APP_URL + imageSrc;
-};
-
 </script>
-
 <template>
-  <AdminLayout title="Products">
+  <AdminLayout title="Categories">
     <div class="wrapper">
       <v-sheet
-        class="products p-5"
+        class="categories p-5"
         height="auto"
         width="100%"
         style="
@@ -155,8 +154,8 @@ const imgPath = (imageSrc) => {
           no-gutters
         >
           <v-col cols="11">
-            <span class="card-title">Products</span>
-            <span class="card-subtitle">All grocery products are here.</span>
+            <span class="card-title">Categories</span>
+            <span class="card-subtitle">Helps to organize your products.</span>
           </v-col>
           <v-col cols="1" class="text-right">
             <v-btn
@@ -165,7 +164,7 @@ const imgPath = (imageSrc) => {
               prepend-icon="fa-solid fa-circle-plus"
               @click="openModal('add')"
             >
-              add product
+              add category
             </v-btn>
           </v-col>
         </v-row>
@@ -175,8 +174,8 @@ const imgPath = (imageSrc) => {
               v-model:items-per-page="itemsPerPage"
               :search="search"
               :headers="headers"
-              :items-length="products.length"
-              :items="products"
+              :items-length="categories.length"
+              :items="categories"
               :loading="loading"
               class="elevation-1 table"
               item-value="name"
@@ -211,15 +210,15 @@ const imgPath = (imageSrc) => {
                   {{ item.name }}
                 </td>
               </template>
-              <template v-slot:item.price="{ item }">
+              <!-- <template v-slot:item.price="{ item }">
                 <td style="font-weight: 600; color: #388e3c">
                   PHP {{ item.price }}
                 </td>
-              </template>
+              </template> -->
               <template v-slot:item.thumbnail="{ item }">
                 <td>
                   <div class="imageThumb">
-                    <img :src="APP_URL + item.img_link" alt="previewImg" />
+                    <img :src="APP_URL + item.logo_path" alt="previewImg" />
                   </div>
                 </td>
               </template>
@@ -236,7 +235,7 @@ const imgPath = (imageSrc) => {
         @cancel="closeModal()"
       >
         <template #header>
-          <span class="card-title">{{ modalMode }} product</span>
+          <span class="card-title">{{ modalMode }} category</span>
         </template>
 
         <template #body>
@@ -251,7 +250,7 @@ const imgPath = (imageSrc) => {
           <div v-if="modalMode === 'delete'">
             <span class="deletePromptTitle"
               >Are you sure to delete this
-              <strong>{{ form.name?.toUpperCase() }}</strong> product?</span
+              <strong>{{ form.name?.toUpperCase() }}</strong> category?</span
             >
             <span class="deletePromptSubTitle"
               >You won't be able to revert this!</span
@@ -266,6 +265,18 @@ const imgPath = (imageSrc) => {
             @click:clear="form.name = null"
             clearable
           ></v-text-field>
+          <v-textarea
+            v-if="modalMode !== 'delete'"
+            v-model="form.description"
+            label="Description"
+            variant="outlined"
+            rows="3"
+            row-height="25"
+            color="primary-bg-color"
+            auto-grow
+            shaped
+            clearable
+          ></v-textarea>
           <v-file-input
             v-if="modalMode !== 'delete'"
             label="Select Image"
@@ -277,7 +288,7 @@ const imgPath = (imageSrc) => {
             @click:clear="previewImage = ''"
             clearable
           ></v-file-input>
-          <v-text-field
+          <!-- <v-text-field
             v-if="modalMode !== 'delete'"
             v-model="form.price"
             label="Price"
@@ -302,7 +313,7 @@ const imgPath = (imageSrc) => {
                 {{ item.value }}
               </v-chip>
             </template>
-          </v-select>
+          </v-select> -->
         </template>
       </Modal>
     </v-dialog>
