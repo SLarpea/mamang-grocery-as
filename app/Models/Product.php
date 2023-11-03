@@ -17,17 +17,17 @@ class Product extends Model
         "categories"
     ];
 
-    public function getAllProducts() 
+    public function products()
     {
-        return $this->all();
+        return $this->orderBy('created_at', 'desc')->get();
     }
 
     public function create(array $data) 
     {
         foreach ($data as $key => $value) {
 
-            if ($key === 'categories') {
-                $this[$key] = json_encode($value);
+            if ($key === 'selectedCategories') {
+                $this['categories'] = json_encode($value);
                 continue;
             }
 
@@ -43,8 +43,8 @@ class Product extends Model
 
         foreach ($data as $key => $value) {
 
-            if ($key === 'categories') {
-                $product[$key] = json_encode($value);
+            if ($key === 'selectedCategories') {
+                $product['categories'] = json_encode($value);
                 continue;
             }
 

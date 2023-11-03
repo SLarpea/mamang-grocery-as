@@ -19,7 +19,7 @@ class Category extends Model
 
     public function categories()
     {
-        return $this->all();
+        return $this->orderBy('created_at', 'desc')->get();
     }
 
     public function create($data)
@@ -46,5 +46,10 @@ class Category extends Model
     public function remove($id)
     {
         $this->where("id", $id)->delete();
+    }
+
+    public function updateStatus(array $data)
+    {
+        $this->where("id", $data['id'])->update(["is_active"=> $data['is_active']]);
     }
 }

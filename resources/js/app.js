@@ -26,6 +26,7 @@ createInertiaApp({
             .use(Vuetify);
             
         window.Swal = app.config.globalProperties.$swal;
+        window.Inertia = app.config.globalProperties.$inertia;
 
         return app.mount(el);
     },

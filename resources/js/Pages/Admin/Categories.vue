@@ -1,13 +1,19 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import Modal from "@/Components/Admin/Modal.vue";
-import { reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
 const props = defineProps({
-    categories: Array,
-    message: String
-})
+  categories: Array,
+  message: String,
+});
+
+onMounted(() => {
+  props.categories.forEach((item) => {
+    statuses.value[item.id] = item.is_active;
+  });
+});
 
 const APP_URL = import.meta.env.VITE_APP_URL;
 const showModal = ref(false);
@@ -64,7 +70,13 @@ const headers = ref([
     title: "Description",
     align: "start",
     key: "description",
-    scrollable: false
+    scrollable: false,
+  },
+  {
+    title: "Status",
+    align: "start",
+    key: "status",
+    scrollable: false,
   },
   {
     title: "Action",
@@ -73,6 +85,7 @@ const headers = ref([
     sortable: false,
   },
 ]);
+const statuses = ref([]);
 
 const openModal = (mode, id = null) => {
   if (mode !== "add") setFormValue(id);
@@ -118,14 +131,46 @@ const setFormValue = (id) => {
   previewImage.value = category.logo_path;
 };
 
-const showToast = (productName, action) => {
+const showToast = (name, action) => {
   Swal.fire({
     toast: true,
-    position: 'top-end',
-    title: `Product ${productName} has been ${action}`,
+    position: "top-end",
+    title: `Category ${name} has been ${action}`,
     icon: "success",
     showConfirmButton: false,
     timer: 3000,
+  });
+};
+
+const onChangeSwitch = (item) => {
+  Swal.fire({
+    title: `${item.is_active ? "Deactivate" : "Activate"}`,
+    text: `Are you sure to ${
+      item.is_active ? "deactivate" : "activate"
+    } status of ${item.name}?`,
+    icon: "question",
+    showConfirmButton: true,
+    showCancelButton: true,
+    confirmButtonText: "Yes, Update it!",
+    cancelButtonText: "Cancel",
+    allowOutsideClick: false,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Inertia.visit(route("category.update.status"), {
+        method: "post",
+        data: { id: item.id, is_active: statuses.value[item.id] },
+        onSuccess: (page) => {
+          if (props.message === "success") {
+            showToast(
+              item.name,
+              `${item.is_active ? "deactivated" : "activated"}`
+            );
+          }
+        },
+      });
+    } else if (result.isDismissed) {
+      statuses.value[item.id] = statuses[item.id] === 0 ? 0 : 1;
+    }
   });
 };
 
@@ -210,11 +255,18 @@ const showToast = (productName, action) => {
                   {{ item.name }}
                 </td>
               </template>
-              <!-- <template v-slot:item.price="{ item }">
-                <td style="font-weight: 600; color: #388e3c">
-                  PHP {{ item.price }}
+              <template v-slot:item.status="{ item }">
+                <td>
+                  <v-switch
+                    color="teal"
+                    v-model="statuses[item.id]"
+                    :true-value="1"
+                    :false-value="0"
+                    @change="onChangeSwitch(item)"
+                    hide-details
+                  ></v-switch>
                 </td>
-              </template> -->
+              </template>
               <template v-slot:item.thumbnail="{ item }">
                 <td>
                   <div class="imageThumb">
@@ -288,32 +340,6 @@ const showToast = (productName, action) => {
             @click:clear="previewImage = ''"
             clearable
           ></v-file-input>
-          <!-- <v-text-field
-            v-if="modalMode !== 'delete'"
-            v-model="form.price"
-            label="Price"
-            variant="outlined"
-            color="primary-bg-color"
-            @click:clear="form.price = null"
-            clearable
-          ></v-text-field>
-          <v-select
-            label="Category"
-            class="category"
-            color="primary-bg-color"
-            no-data-text="No data available"
-            variant="outlined"
-            :items="[]"
-            multiple
-            chips
-            clearable
-          >
-            <template v-slot:chip="{ item }">
-              <v-chip color="primary-bg-color">
-                {{ item.value }}
-              </v-chip>
-            </template>
-          </v-select> -->
         </template>
       </Modal>
     </v-dialog>

@@ -73,6 +73,15 @@ class CategoryController extends Controller
         return redirect()->route('categories.index');
     }
 
+    public function editStatus(Request $request)
+    {
+        if ($request->has('id')) {
+            $this->categoryModel->updateStatus($request->all());
+        }
+
+        return redirect()->route('categories.index');
+    }
+
     private function saveFileToStorage($file)
     {
         $image = $this->imagick;

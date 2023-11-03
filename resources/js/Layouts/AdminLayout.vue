@@ -22,7 +22,7 @@ const links = ref([
   },
   {
     text: "Categories",
-    icon: "fa-solid fa-layer-group",
+    icon: "fa-solid fa-tags",
     path: "categories.index"
   },
   {

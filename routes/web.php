@@ -47,6 +47,7 @@ Route::middleware([
             Route::get('/', [CategoryController::class,'index'])->name('categories.index');
             Route::post('/store', [CategoryController::class,'store'])->name('category.store');
             Route::post('/update', [CategoryController::class,'update'])->name('category.update');
+            Route::post('/update-status', [CategoryController::class,'editStatus'])->name('category.update.status');
             Route::post('/delete', [CategoryController::class,'remove'])->name('category.delete');
         });
     });

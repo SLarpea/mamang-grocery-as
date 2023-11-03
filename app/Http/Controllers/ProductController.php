@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -12,17 +13,20 @@ class ProductController extends Controller
 {
     private $imagick;
     private $productModel;
+    private $categoryModel;
 
     public function __construct()
     {
         $this->imagick = new Imagick();
         $this->productModel = new Product();
+        $this->categoryModel = new Category();
     }
 
     public function index(Request $request)
     {
         return Inertia::render("Admin/Products", [
-            'products' => $this->productModel->getAllProducts(),
+            'products' => $this->productModel->products(),
+            'categories' => $this->categoryModel->categories(),
             'message' => 'success'
         ]);
     }

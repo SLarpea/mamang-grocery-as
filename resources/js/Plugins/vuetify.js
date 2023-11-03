@@ -31,7 +31,13 @@ export const Vuetify = createVuetify({
                     'add-bg-button-color': colors.blue.darken3,
                     'edit-bg-button-color': colors.orange.darken3,
                     'delete-bg-button-color': colors.red.darken3,
-                    'cancel-bg-button-color': colors.grey.darken2
+                    'cancel-bg-button-color': colors.grey.darken2,
+
+                    'teal': colors.teal.darken1,
+                    'blue': colors.blue.darken1,
+                    'red': colors.red.darken1,
+                    'orange': colors.orange.darken1,
+                    'brown': colors.brown.darken1
                 }
             }
         }

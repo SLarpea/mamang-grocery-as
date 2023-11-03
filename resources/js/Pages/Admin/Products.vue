@@ -8,6 +8,7 @@ const APP_URL = import.meta.env.VITE_APP_URL;
 
 const props = defineProps({
   products: Array,
+  categories: Array,
   message: String,
 });
 
@@ -38,6 +39,11 @@ const headers = ref([
     title: "Price",
     align: "start",
     key: "price",
+  },
+  {
+    title: "Categories",
+    align: "start",
+    key: "categories",
   },
   {
     title: "Action",
@@ -71,6 +77,7 @@ const form = useForm({
   name: null,
   file: null,
   price: null,
+  selectedCategories: [],
   img_link: null,
 });
 
@@ -104,6 +111,7 @@ const setFormValue = (id) => {
   form.id = id;
   form.name = product.name;
   form.price = product.price;
+  form.selectedCategories = JSON.parse(product.categories);
   form.img_link = product.img_link;
   previewImage.value = product.img_link;
 };
@@ -127,6 +135,13 @@ const closeModal = () => {
 
 const imgPath = (imageSrc) => {
   return imageSrc.includes("blob") ? imageSrc : APP_URL + imageSrc;
+};
+
+const chipColor = () => {
+  var colors = ['blue', 'red', 'teal', 'orange', 'brown'];
+  var randNum = Math.floor(Math.random() * 5);
+
+  return colors[randNum];
 };
 
 </script>
@@ -223,6 +238,14 @@ const imgPath = (imageSrc) => {
                   </div>
                 </td>
               </template>
+              <template v-slot:item.categories="{ item }">
+                <td>
+                  <v-chip v-for="(item, index) in JSON.parse(item.categories)" size="small" :color="chipColor()" :key="index">
+                    <v-icon class="mr-1" size="x-small" icon="fa-solid fa-tag"></v-icon>
+                    {{ item }}
+                  </v-chip>
+                </td>
+              </template>
             </v-data-table>
           </v-col>
         </v-row>
@@ -287,18 +310,23 @@ const imgPath = (imageSrc) => {
             clearable
           ></v-text-field>
           <v-select
+            v-if="modalMode !== 'delete'"
+            v-model="form.selectedCategories"
             label="Category"
             class="category"
             color="primary-bg-color"
             no-data-text="No data available"
             variant="outlined"
-            :items="[]"
+            item-value="name"
+            item-title="name"
+            :items="categories"
             multiple
             chips
             clearable
           >
             <template v-slot:chip="{ item }">
               <v-chip color="primary-bg-color">
+                <v-icon class="mr-1" size="x-small" icon="fa-solid fa-tag"></v-icon>
                 {{ item.value }}
               </v-chip>
             </template>
