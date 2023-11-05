@@ -154,6 +154,7 @@ const onChangeSwitch = (item) => {
     confirmButtonText: "Yes, Update it!",
     cancelButtonText: "Cancel",
     allowOutsideClick: false,
+    customClass: "default",
   }).then((result) => {
     if (result.isConfirmed) {
       Inertia.visit(route("category.update.status"), {

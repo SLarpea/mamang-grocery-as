@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\ProductEvents;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,6 +11,11 @@ class Product extends Model
     use HasFactory;
 
     protected $table = 'products';
+    protected $dispatchesEvents = [
+        'created' => ProductEvents::class,
+        'updated' => ProductEvents::class,
+        'deleted' => ProductEvents::class,
+    ];
     protected $fillable = [
         "name",
         "img_link",

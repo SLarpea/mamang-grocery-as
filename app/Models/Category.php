@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\CategoryEvents;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,6 +11,11 @@ class Category extends Model
     use HasFactory;
 
     protected $table = 'categories';
+    protected $dispatchesEvents = [
+        'created' => CategoryEvents::class,
+        'updated' => CategoryEvents::class,
+        'deleted' => CategoryEvents::class,
+    ];
     protected $fillable = [
         "name",
         "description",

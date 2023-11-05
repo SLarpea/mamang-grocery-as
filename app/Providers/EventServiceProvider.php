@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\CategoryEvents;
+use App\Events\ProductEvents;
+use App\Listeners\CategoryCacheListener;
+use App\Listeners\ProductCacheListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -17,6 +21,12 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+        ProductEvents::class => [
+            ProductCacheListener::class,
+        ],
+        CategoryEvents::class => [
+            CategoryCacheListener::class,
         ],
     ];
 

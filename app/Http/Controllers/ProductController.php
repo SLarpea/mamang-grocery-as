@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\CategoryEvents;
+use App\Events\ProductEvents;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -24,9 +26,12 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
+        ProductEvents::dispatchIf(!cache()->has("products"));
+        CategoryEvents::dispatchIf(!cache()->has("categories"));
+
         return Inertia::render("Admin/Products", [
-            'products' => $this->productModel->products(),
-            'categories' => $this->categoryModel->categories(),
+            'products' => cache()->get("products"),
+            'categories' => cache()->get("categories"),
             'message' => 'success'
         ]);
     }
