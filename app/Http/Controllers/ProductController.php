@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Events\CategoryEvents;
 use App\Events\ProductEvents;
-use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,13 +14,11 @@ class ProductController extends Controller
 {
     private $imagick;
     private $productModel;
-    private $categoryModel;
 
     public function __construct()
     {
         $this->imagick = new Imagick();
         $this->productModel = new Product();
-        $this->categoryModel = new Category();
     }
 
     public function index(Request $request)
