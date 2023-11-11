@@ -25,7 +25,7 @@ class Product extends Model
 
     public function products()
     {
-        return $this->orderBy('created_at', 'desc')->get();
+        return $this->orderBy('updated_at', 'desc')->get();
     }
 
     public function create(array $data) 
@@ -45,7 +45,7 @@ class Product extends Model
 
     public function edit(array $data, $id) 
     {
-        $product = $this->where("id", $id)->first();
+        $product = $this->getSingleProduct($id);
 
         foreach ($data as $key => $value) {
 
@@ -62,6 +62,27 @@ class Product extends Model
 
     public function remove($id)
     {
-        $this->where("id", $id)->delete();
+        $this->where("id", $id)->first()->delete();
+    }
+
+    public function activateSale($data)
+    {
+        $product = $this->getSingleProduct($data["id"]);
+        $product->on_sale = true;
+        $product->percent_sale = $data["sale_percent"];
+        $product->save();
+    }
+
+    public function deactivateSale($data)
+    {
+        $product = $this->getSingleProduct($data["id"]);
+        $product->on_sale = false;
+        $product->percent_sale = 0;
+        $product->save();
+    }
+
+    private function getSingleProduct($id)
+    {
+        return $this->where("id", $id)->first();
     }
 }

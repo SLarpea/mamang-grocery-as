@@ -4,6 +4,7 @@
 /public/storage
 /public/products
 /public/categories
+/public/brands
 /storage/*.key
 /vendor
 .env

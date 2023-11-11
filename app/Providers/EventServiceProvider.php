@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\BrandEvents;
 use App\Events\CategoryEvents;
 use App\Events\ProductEvents;
+use App\Listeners\BrandCacheListener;
 use App\Listeners\CategoryCacheListener;
 use App\Listeners\ProductCacheListener;
 use Illuminate\Auth\Events\Registered;
@@ -27,6 +29,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         CategoryEvents::class => [
             CategoryCacheListener::class,
+        ],
+        BrandEvents::class => [
+            BrandCacheListener::class
         ],
     ];
 

@@ -78,6 +78,26 @@ class ProductController extends Controller
         return redirect()->route('products.index');
     }
 
+    public function activateSale(Request $request)
+    {
+        if ($request->has('id')) {
+            $data = $request->all();
+            $this->productModel->activateSale($data);
+        }
+
+        return redirect()->route('products.index');
+    }
+
+    public function deactivateSale(Request $request)
+    {
+        if ($request->has('id')) {
+            $data = $request->all();
+            $this->productModel->deactivateSale($data);
+        }
+
+        return redirect()->route('products.index');
+    }
+
     private function saveFileToStorage($file)
     {
         $image = $this->imagick;

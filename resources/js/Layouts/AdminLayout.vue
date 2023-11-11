@@ -28,6 +28,16 @@ const links = reactive([
     path: "categories.index",
   },
   {
+    text: "Brands",
+    icon: "fa-solid fa-medal",
+    path: "brands.index",
+  },
+  {
+    text: "Carousels",
+    icon: "fa-solid fa-horse",
+    path: "carousels.index",
+  },
+  {
     text: "Users",
     icon: "fa-solid fa-users",
     path: "admin.users",

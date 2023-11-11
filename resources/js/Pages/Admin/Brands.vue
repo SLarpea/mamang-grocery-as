@@ -1,56 +1,22 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import Modal from "@/Components/Admin/Modal.vue";
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
+const APP_URL = import.meta.env.VITE_APP_URL;
+
 const props = defineProps({
-  categories: Array,
+  brands: Array,
   message: String,
 });
 
-watch(() => props.categories, (newVal) => {
-  statuses.value = newVal.reduce((acc, {id, is_active}) => (acc[id] = is_active, acc), Array(
-    newVal.length == 0 ? 0 :
-    Math.max(...newVal.map((item) => item.id))
-  ).fill(0))
-});
-
-const APP_URL = import.meta.env.VITE_APP_URL;
 const showModal = ref(false);
 const modalMode = ref("default");
 const previewImage = ref("");
 const search = ref("");
 const itemsPerPage = ref(6);
 const loading = ref(false);
-const form = useForm({
-  id: null,
-  name: null,
-  description: null,
-  logo_path: null,
-  file: null,
-  is_active: true,
-});
-const actions = reactive({
-  add: {
-    icon: "fa-regular fa-square-plus",
-    method: "post",
-    path: "category.store",
-    action: "saved",
-  },
-  edit: {
-    icon: "fa-solid fa-pen",
-    method: "post",
-    path: "category.update",
-    action: "updated",
-  },
-  delete: {
-    icon: "fa-solid fa-xmark",
-    method: "post",
-    path: "category.delete",
-    action: "removed",
-  },
-});
 const headers = ref([
   {
     title: "Id",
@@ -69,32 +35,38 @@ const headers = ref([
     sortable: false,
   },
   {
-    title: "Description",
-    align: "start",
-    key: "description",
-    scrollable: false,
-  },
-  {
-    title: "Status",
-    align: "start",
-    key: "status",
-    scrollable: false,
-  },
-  {
     title: "Action",
     align: "start",
     key: "actions",
     sortable: false,
   },
 ]);
-
-const statuses = ref(
-  props.categories.reduce((acc, {id, is_active}) => (acc[id] = is_active, acc), Array(
-    props.categories.length == 0 ? 0 :
-    Math.max(...props.categories.map((item) => item.id))
-  ).fill(0))
-);
-
+const actions = reactive({
+  add: {
+    icon: "fa-regular fa-square-plus",
+    method: "post",
+    path: "brand.store",
+    action: "saved",
+  },
+  edit: {
+    icon: "fa-solid fa-pen",
+    method: "post",
+    path: "brand.update",
+    action: "updated",
+  },
+  delete: {
+    icon: "fa-solid fa-xmark",
+    method: "post",
+    path: "brand.delete",
+    action: "removed",
+  },
+});
+const form = useForm({
+  id: null,
+  name: null,
+  file: null,
+  img_path: null
+});
 
 const openModal = (mode, id = null) => {
   if (mode !== "add") setFormValue(id);
@@ -108,13 +80,28 @@ const closeModal = () => {
   form.reset();
 };
 
+const showToast = (title) => {
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    title: title,
+    icon: "success",
+    showConfirmButton: false,
+    timer: 3000,
+  });
+};
+
+const setFormValue = (id) => {
+  const brand = props.brands.find((item) => item.id === id);
+  form.id = id;
+  form.name = brand.name;
+  form.img_path = brand.img_path;
+  previewImage.value = brand.img_path;
+};
+
 const onImagePreview = (e) => {
   form.file = e.target.files[0];
   previewImage.value = URL.createObjectURL(form.file);
-};
-
-const imgPath = (imageSrc) => {
-  return imageSrc.includes("blob") ? imageSrc : APP_URL + imageSrc;
 };
 
 const submitForm = (mode) => {
@@ -123,7 +110,7 @@ const submitForm = (mode) => {
       if (response.props.message === "success") {
         modalMode.value = "default";
         showModal.value = false;
-        showToast(form.name.toUpperCase(), actions[mode].action);
+        showToast(`Brand ${form.name.toUpperCase()} has been ${actions[mode].action}`);
         form.reset();
         previewImage.value = "";
       }
@@ -131,65 +118,16 @@ const submitForm = (mode) => {
   });
 };
 
-const setFormValue = (id) => {
-  const category = props.categories.find((item) => item.id === id);
-  form.id = id;
-  form.name = category.name;
-  form.description = category.description;
-  form.logo_path = category.logo_path;
-  previewImage.value = category.logo_path;
-};
-
-const showToast = (name, action) => {
-  Swal.fire({
-    toast: true,
-    position: "top-end",
-    title: `Category ${name} has been ${action}`,
-    icon: "success",
-    showConfirmButton: false,
-    timer: 3000,
-  });
-};
-
-const onChangeSwitch = (item) => {
-  Swal.fire({
-    title: `${item.is_active ? "Deactivate" : "Activate"}`,
-    text: `Are you sure to ${
-      item.is_active ? "deactivate" : "activate"
-    } status of ${item.name}?`,
-    icon: "question",
-    showConfirmButton: true,
-    showCancelButton: true,
-    confirmButtonText: "Yes, Update it!",
-    cancelButtonText: "Cancel",
-    allowOutsideClick: false,
-    customClass: "default",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      Inertia.visit(route("category.update.status"), {
-        method: "post",
-        data: { id: item.id, is_active: statuses.value[item.id] },
-        onSuccess: (page) => {
-          if (props.message === "success") {
-            showToast(
-              item.name,
-              `${item.is_active ? "deactivated" : "activated"}`
-            );
-          }
-        },
-      });
-    } else if (result.isDismissed) {
-      statuses.value[item.id] = statuses[item.id] === 0 ? 0 : 1;
-    }
-  });
+const imgPath = (imageSrc) => {
+  return imageSrc.includes("blob") ? imageSrc : APP_URL + imageSrc;
 };
 
 </script>
 <template>
-  <AdminLayout title="Categories">
+  <AdminLayout title="Brands">
     <div class="wrapper">
       <v-sheet
-        class="categories p-5"
+        class="products p-5"
         height="auto"
         width="100%"
         style="
@@ -209,8 +147,10 @@ const onChangeSwitch = (item) => {
           no-gutters
         >
           <v-col cols="11">
-            <span class="card-title">Categories</span>
-            <span class="card-subtitle">Helps to organize your products.</span>
+            <span class="card-title">Brands</span>
+            <span class="card-subtitle"
+              >Supplied by top brands here in the Philippines.</span
+            >
           </v-col>
           <v-col cols="1" class="text-right">
             <v-btn
@@ -219,7 +159,7 @@ const onChangeSwitch = (item) => {
               prepend-icon="fa-solid fa-circle-plus"
               @click="openModal('add')"
             >
-              add category
+              add brand
             </v-btn>
           </v-col>
         </v-row>
@@ -229,8 +169,8 @@ const onChangeSwitch = (item) => {
               v-model:items-per-page="itemsPerPage"
               :search="search"
               :headers="headers"
-              :items-length="categories.length"
-              :items="categories"
+              :items-length="brands.length"
+              :items="brands"
               :loading="loading"
               class="elevation-1 table"
               item-value="name"
@@ -266,22 +206,10 @@ const onChangeSwitch = (item) => {
                   {{ item.name }}
                 </td>
               </template>
-              <template v-slot:item.status="{ item }">
-                <td>
-                  <v-switch
-                    color="teal"
-                    v-model="statuses[item.id]"
-                    :true-value="1"
-                    :false-value="0"
-                    @change="onChangeSwitch(item)"
-                    hide-details
-                  ></v-switch>
-                </td>
-              </template>
               <template v-slot:item.thumbnail="{ item }">
                 <td>
                   <div class="imageThumb">
-                    <img :src="APP_URL + item.logo_path" alt="previewImg" />
+                    <img :src="APP_URL + item.img_path" alt="previewImg" />
                   </div>
                 </td>
               </template>
@@ -298,7 +226,7 @@ const onChangeSwitch = (item) => {
         @cancel="closeModal()"
       >
         <template #header>
-          <span class="card-title">{{ modalMode }} category</span>
+          <span class="card-title">{{ modalMode }} brand</span>
         </template>
 
         <template #body>
@@ -313,7 +241,7 @@ const onChangeSwitch = (item) => {
           <div v-if="modalMode === 'delete'">
             <span class="deletePromptTitle"
               >Are you sure to delete this
-              <strong>{{ form.name?.toUpperCase() }}</strong> category?</span
+              <strong>{{ form.name?.toUpperCase() }}</strong> brand?</span
             >
             <span class="deletePromptSubTitle"
               >You won't be able to revert this!</span
@@ -328,18 +256,6 @@ const onChangeSwitch = (item) => {
             @click:clear="form.name = null"
             clearable
           ></v-text-field>
-          <v-textarea
-            v-if="modalMode !== 'delete'"
-            v-model="form.description"
-            label="Description"
-            variant="outlined"
-            rows="3"
-            row-height="25"
-            color="primary-bg-color"
-            auto-grow
-            shaped
-            clearable
-          ></v-textarea>
           <v-file-input
             v-if="modalMode !== 'delete'"
             label="Select Image"

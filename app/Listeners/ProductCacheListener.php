@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 
 class ProductCacheListener
 {
+    private $productModel;
     /**
      * Create the event listener.
      *
@@ -17,7 +18,7 @@ class ProductCacheListener
      */
     public function __construct()
     {
-        //
+        $this->productModel = new Product();
     }
 
     /**
@@ -31,7 +32,7 @@ class ProductCacheListener
         Cache::forget("products");
 
         Cache::rememberForever("products", function () {
-            return Product::all();
+            return $this->productModel->products();
         });
     }
 }

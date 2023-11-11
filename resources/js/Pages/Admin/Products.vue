@@ -1,7 +1,7 @@
 <script setup>
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import Modal from "@/Components/Admin/Modal.vue";
-import { reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 
 const APP_URL = import.meta.env.VITE_APP_URL;
@@ -12,12 +12,19 @@ const props = defineProps({
   message: String,
 });
 
+onMounted(() => {
+  props.products.forEach((item) => {
+    sales.value[item.id] = item.on_sale;
+  });
+});
+
 const showModal = ref(false);
 const modalMode = ref("default");
 const previewImage = ref("");
 const search = ref("");
 const itemsPerPage = ref(6);
 const loading = ref(false);
+const sales = ref([]);
 const headers = ref([
   {
     title: "Id",
@@ -44,6 +51,11 @@ const headers = ref([
     title: "Categories",
     align: "start",
     key: "categories",
+  },
+  {
+    title: "Sale",
+    align: "start",
+    key: "sale",
   },
   {
     title: "Action",
@@ -98,7 +110,7 @@ const submitForm = (mode) => {
       if (response.props.message === "success") {
         modalMode.value = "default";
         showModal.value = false;
-        showToast(form.name.toUpperCase(), actions[mode].action);
+        showToast(`Product ${form.name.toUpperCase()} has been ${actions[mode].action}`);
         form.reset();
         previewImage.value = "";
       }
@@ -116,11 +128,11 @@ const setFormValue = (id) => {
   previewImage.value = product.img_link;
 };
 
-const showToast = (productName, action) => {
+const showToast = (title) => {
   Swal.fire({
     toast: true,
     position: 'top-end',
-    title: `Product ${productName} has been ${action}`,
+    title: title,
     icon: "success",
     showConfirmButton: false,
     timer: 3000,
@@ -142,6 +154,63 @@ const chipColor = () => {
   var randNum = Math.floor(Math.random() * 5);
 
   return colors[randNum];
+};
+
+const onChangeSwitch = (item) => {
+  Swal.fire({
+    title: "Activate Sale",
+    input: 'number',
+    inputLabel: 'Enter percent on sale',
+    showConfirmButton: true,
+    showCancelButton: true,
+    confirmButtonText: "Item on Sale!",
+    showLoaderOnConfirm: true,
+    preConfirm: async (percent) => {
+      try {
+        Inertia.visit(route('product.activate.sale'), {
+          method: 'post',
+          data: { id: item.id, sale_percent: parseInt(percent) },
+          onError: error => {
+            alert(error);
+          }
+        });
+      } catch (error) {
+        Swal.showValidationMessage(`Request failed: ${error} `);
+      }
+    },
+    cancelButtonText: "Cancel",
+    allowOutsideClick: false,
+    customClass: "default",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      showToast(
+        `Product of ${item.name.toUpperCase()} is now on sale!`
+      );
+    } else if (result.isDismissed) {
+      sales.value[item.id] = 0;
+    }
+  });
+};
+
+const deactivateProductSale = (item) => {
+  Swal.fire({
+    title: "Deactivate Sale",
+    text: `Are you sure deactivate ${item.percent_sale}% sale on this ${item.name.toUpperCase()} product?`,
+    showConfirmButton: true,
+    confirmButtonText: "Yes, Deactivate It!",
+    showCancelButton: true,
+    allowOutsideClick: false,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Inertia.visit(route('product.deactivate.sale'), {
+        method: 'post',
+        data: { id: item.id },
+        onSuccess: page => {
+          showToast(`Product sale ${item.name.toUpperCase()} have been deactivated`);
+        }
+      })
+    }
+  })
 };
 
 </script>
@@ -196,6 +265,7 @@ const chipColor = () => {
               class="elevation-1 table"
               item-value="name"
               loading-text="Loading... Please wait"
+              no-data-text="No data available"
             >
               <template v-slot:top>
                 <v-text-field
@@ -244,6 +314,29 @@ const chipColor = () => {
                     <v-icon class="mr-1" size="x-small" icon="fa-solid fa-tag"></v-icon>
                     {{ item }}
                   </v-chip>
+                </td>
+              </template>
+              <template v-slot:item.sale="{ item }">
+                <td>
+                  <v-btn
+                    v-if="item.on_sale === 1 && item.percent_sale !== 0"
+                    variant="tonal"
+                    density="comfortable"
+                    color="#B71C1C"
+                    rounded
+                    @click.prevent="deactivateProductSale(item)"
+                  >
+                    {{ item.percent_sale }}% off
+                  </v-btn>
+                  <v-switch
+                    v-if="item.on_sale === 0 && item.percent_sale === 0"
+                    v-model="sales[item.id]"
+                    color="teal"
+                    :true-value="1"
+                    :false-value="0"
+                    @change="onChangeSwitch(item)"
+                    hide-details
+                  ></v-switch>
                 </td>
               </template>
             </v-data-table>

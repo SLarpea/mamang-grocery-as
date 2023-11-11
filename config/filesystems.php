@@ -60,6 +60,22 @@ return [
             'throw' => false,
         ],
 
+        'brands' => [
+            'driver' => 'local',
+            'root' => storage_path('app/brands'),
+            'url' => env('APP_URL').'/brands',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        'carousels' => [
+            'driver' => 'local',
+            'root' => storage_path('app/carousels'),
+            'url' => env('APP_URL').'/carousels',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
@@ -89,6 +105,8 @@ return [
         // public_path('storage') => storage_path('app/public'),
         public_path('products') => storage_path('app/products'),
         public_path('categories') => storage_path('app/categories'),
+        public_path('brands') => storage_path('app/brands'),
+        public_path('carousels') => storage_path('app/carousels'),
     ],
 
 ];

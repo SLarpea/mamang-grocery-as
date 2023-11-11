@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 
 class CategoryCacheListener
 {
+    private $categoryModel;
     /**
      * Create the event listener.
      *
@@ -17,7 +18,7 @@ class CategoryCacheListener
      */
     public function __construct()
     {
-        //
+        $this->categoryModel = new Category();
     }
 
     /**
@@ -31,7 +32,7 @@ class CategoryCacheListener
         Cache::forget("categories");
 
         Cache::rememberForever("categories", function () {
-            return Category::all();
+            return $this->categoryModel->categories();
         });
     }
 }
