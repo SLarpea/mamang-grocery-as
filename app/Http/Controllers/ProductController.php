@@ -21,7 +21,7 @@ class ProductController extends Controller
         $this->productModel = new Product();
     }
 
-    public function index(Request $request)
+    public function index()
     {
         ProductEvents::dispatchIf(!cache()->has("products"));
         CategoryEvents::dispatchIf(!cache()->has("categories"));

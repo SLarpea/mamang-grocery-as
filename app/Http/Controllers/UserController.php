@@ -7,7 +7,7 @@ use Inertia\Inertia;
 
 class UserController extends Controller
 {
-    public function index(Request $request) {
+    public function index() {
         return Inertia::render("Admin/Users", []);
     }
 }

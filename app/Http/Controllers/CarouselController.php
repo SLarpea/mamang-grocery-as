@@ -17,10 +17,18 @@ class CarouselController extends Controller
         $this->carouselModel = new Carousel();
     }
 
-    public function index(Request $request)
+    public function index()
     {
-        CarouselEvents::dispatchIf(!cache()->has("carousels"));
+        CarouselEvents::dispatchIf(!cache()->has("carousels" || "carousel"), request('current'));
 
+        if (!is_null(request('current'))) {
+            return Inertia::render("Admin/Carousel", [
+                "carousel" => cache()->get("carousel"),
+                "message" => "success"
+            ]);
+        }
+
+        
         return Inertia::render("Admin/Carousels", [
             "carousels" => cache()->get("carousels"),
             "message" => "success"

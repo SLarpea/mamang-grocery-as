@@ -150,7 +150,7 @@ const listStyle = (link, pageTitle) => {
             v-for="(link, index) in settingLinks"
             :key="index"
             :href="route(link.path)"
-            :class="['link', { active: link.text === title }]"
+            :class="['link', { active: link.text === title || link.text.includes(title) }]"
             method="get"
           >
             <i :class="link.icon"></i>

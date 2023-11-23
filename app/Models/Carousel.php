@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\CarouselEvents;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,27 +12,45 @@ class Carousel extends Model
     use HasFactory;
 
     protected $table = 'carousels';
+    protected $dispatchesEvents = [
+        'created' => CarouselEvents::class,
+        'updated' => CarouselEvents::class,
+        'deleted' => CarouselEvents::class,
+    ];
     protected $fillable = [
         'name',
         'data',
         'type',
+        'dots',
+        'arrows',
+        'accessibility',
+        'rows',
+        'slides_to_show',
+        'slides_per_row',
+        'autoplay_speed',
+        'center_padding',
+        'pause_on_hover',
         'min_slide',
-        'max_slide'
+        'max_slide',
+        'slider_headers'
     ];
     protected $casts = [
         'data' => AsArrayObject::class,
     ];
 
-    public function carousels()
+    public function carousels($filter)
     {
-        return $this->all();
+        return $this->when(isset($filter['current']) && !empty($filter['current']), function ($query) use ($filter) {
+                $query->where('name', 'like', '%'. $filter['current'] .'%');
+            })
+            ->orderBy('updated_at', 'desc')->get();
     }
 
     public function create(array $data)
     {
         foreach ($data as $key => $value) {
-            if ($key === 'data') {
-                $this['data'] = json_encode($value);
+            if ($key === 'data' || $key === 'slider_headers') {
+                $this[$key] = json_encode($value);
                 continue;
             }
             $this[$key] = $value;
@@ -54,8 +73,8 @@ class Carousel extends Model
         $carousel = $this->getSingleCarousel($id);
 
         foreach ($data as $key => $value) {
-            if ($key === 'data') {
-                $carousel['data'] = json_encode($value);
+            if ($key === 'data' || $key === 'slider_headers') {
+                $carousel[$key] = json_encode($value);
                 continue;
             }
             $carousel[$key] = $value;

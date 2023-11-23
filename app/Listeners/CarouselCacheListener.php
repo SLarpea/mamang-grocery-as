@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Events\CarouselEvents;
 use App\Models\Carousel;
 use Cache;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -26,12 +27,14 @@ class CarouselCacheListener
      * @param  object  $event
      * @return void
      */
-    public function handle($event)
+    public function handle(CarouselEvents $event)
     {
         Cache::forget("carousels");
+        Cache::forget("carousel");
 
-        Cache::rememberForever("carousels", function () {
-            return $this->carouselModel->carousels();
+        Cache::rememberForever(empty($event->currCarousel) ? "carousels" : "carousel", function () use ($event) {
+            $filter['current'] = $event->currCarousel;
+            return $this->carouselModel->carousels($filter);
         });
     }
 }
