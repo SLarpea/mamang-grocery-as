@@ -133,8 +133,7 @@ const showToast = (title) => {
 const setFormValue = (idx) => {
   const slide = JSON.parse(slides[idx]);
   if (carousel.type === "promo") {
-    form.id = id,
-    form.text = slide.text;
+    (form.id = id), (form.text = slide.text);
     form.pill_text = slide.pill_text;
   } else {
     form.image_path = slide.image_path;
@@ -156,6 +155,11 @@ const submitForm = (mode, idx) => {
   });
 };
 
+const onImagePreview = (e) => {
+  form.file = e.target.files[0];
+  previewImage.value = URL.createObjectURL(form.file);
+};
+
 const breadCrumbItems = (curr) => {
   return [
     {
@@ -169,6 +173,11 @@ const breadCrumbItems = (curr) => {
     },
   ];
 };
+
+const imgPath = (imageSrc) => {
+  return imageSrc.includes("blob") ? imageSrc : APP_URL + imageSrc;
+};
+
 </script>
 <template>
   <AdminLayout title="Carousel">
@@ -273,17 +282,56 @@ const breadCrumbItems = (curr) => {
         </template>
 
         <template #body>
-            <div>BRuh</div>
-          <!-- <div v-if="modalMode === 'delete'">
+          <div v-if="modalMode === 'delete'">
             <span class="deletePromptTitle"
               >Are you sure to delete this
-              <strong>{{ form.name?.toUpperCase() }}</strong> carousel?</span
+              <strong>{{ selectedSlideIdx + 1 }}</strong> slide?</span
             >
             <span class="deletePromptSubTitle"
               >You won't be able to revert this!</span
             >
           </div>
-          <v-text-field
+          <div v-if="modalMode !== 'delete'">
+            <div v-if="carousel.type === 'promo'">
+              <v-text-field
+                v-model="form.text"
+                label="Text"
+                variant="outlined"
+                color="primary-bg-color"
+                @click:clear="form.text = null"
+                clearable
+              ></v-text-field>
+              <v-text-field
+                v-model="form.pill_text"
+                label="Pill Text"
+                variant="outlined"
+                color="primary-bg-color"
+                @click:clear="form.pill_text = null"
+                clearable
+              ></v-text-field>
+            </div>
+            <div v-if="carousel.type !== 'promo'">
+              <v-img
+                v-if="previewImage"
+                class="bg-white mb-5 mx-auto"
+                width="300"
+                :aspect-ratio="1"
+                :src="imgPath(previewImage)"
+                cover
+              ></v-img>
+              <v-file-input
+                label="Select Image"
+                variant="outlined"
+                color="primary-bg-color"
+                prepend-icon=""
+                density="compact"
+                @change="onImagePreview"
+                @click:clear="previewImage = ''"
+                clearable
+              ></v-file-input>
+            </div>
+          </div>
+          <!-- <v-text-field
             v-if="modalMode !== 'delete'"
             v-model="form.name"
             label="Name"
