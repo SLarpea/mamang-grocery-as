@@ -22,9 +22,16 @@ const form = useForm({
   id: null,
   name: null,
   type: null,
+  dots: null,
+  arrows: null,
+  accessibilty: null,
+  rows: null,
+  slides_to_show: null,
+  slides_per_row: null,
+  autoplay_speed: null,
+  pause_on_hover: null,
   min_slide: null,
   max_slide: null,
-  slider_headers: [],
 });
 const headers = ref([
   {
@@ -82,12 +89,6 @@ const headers = ref([
     width: "12rem",
   },
   {
-    title: "Center Padding",
-    align: "start",
-    key: "center_padding",
-    width: "12rem",
-  },
-  {
     title: "Pause On Hover",
     align: "start",
     key: "pause_on_hover",
@@ -105,16 +106,9 @@ const headers = ref([
     key: "max_slide",
     width: "10rem",
   },
-//   {
-//     title: "Slider Headers",
-//     align: "start",
-//     key: "slider_headers",
-//     sortable: false,
-//     width: "20rem",
-//   },
   {
     title: "Action",
-    align: "start",
+    align: "center",
     key: "actions",
     sortable: false,
   },
@@ -164,16 +158,20 @@ const showToast = (title) => {
 
 const setFormValue = (id) => {
   const carousel = props.carousels.find((item) => item.id === id);
-  //   console.log(carousel.slider_headers);
   form.id = id;
   form.name = carousel.name;
   form.type = carousel.type;
+  form.dots = carousel.dots;
+  form.arrows = carousel.arrows;
+  form.accessibilty = carousel.accessibilty;
+  form.rows = carousel.rows;
+  form.slides_to_show = carousel.slides_to_show;
+  form.slides_per_row = carousel.slides_per_row;
+  form.autoplay_speed = carousel.autoplay_speed;
+  form.center_padding = carousel.center_padding;
+  form.pause_on_hover = carousel.pause_on_hover;
   form.min_slide = carousel.min_slide;
   form.max_slide = carousel.max_slide;
-//   form.slider_headers =
-//     carousel.slider_headers === null || carousel.slider_headers === undefined
-//       ? []
-//       : JSON.parse(carousel.slider_headers).filter((item) => item.title);
 };
 
 const submitForm = (mode) => {
@@ -252,14 +250,14 @@ const onSliderHeadersChange = (newVal) => {
             >
           </v-col>
           <v-col cols="1" class="text-right">
-            <v-btn
+            <!-- <v-btn
               size="small"
               color="add-bg-button-color"
               prepend-icon="fa-solid fa-circle-plus"
               @click="openModal('add')"
             >
               add carousel
-            </v-btn>
+            </v-btn> -->
           </v-col>
         </v-row>
         <v-row no-gutters>
@@ -277,6 +275,7 @@ const onSliderHeadersChange = (newVal) => {
             >
               <template v-slot:item.name="{ item }">
                 <Link
+                  v-if="item.type !== 'products'"
                   :href="
                     route('carousels.index', {
                       current: item.type,
@@ -284,6 +283,7 @@ const onSliderHeadersChange = (newVal) => {
                   "
                   >{{ item.name }}</Link
                 >
+                <td v-if="item.type === 'products'">{{ item.name }}</td>
               </template>
               <template v-slot:item.autoplay_speed="{ item }">
                 <td>
@@ -291,19 +291,6 @@ const onSliderHeadersChange = (newVal) => {
                   {{ pluralization(item.autoplay_speed, "second") }}
                 </td>
               </template>
-              <!-- <template v-slot:item.slider_headers="{ item }">
-                <td>
-                  <v-chip
-                    v-for="(item, index) in JSON.parse(item.slider_headers)"
-                    size="small"
-                    color="primary-bg-color"
-                    class="my-1"
-                    :key="index"
-                  >
-                    {{ item.title }}
-                  </v-chip>
-                </td>
-              </template> -->
               <template v-slot:item.actions="{ item }">
                 <v-icon
                   icon="fa-solid fa-pen"
@@ -312,12 +299,12 @@ const onSliderHeadersChange = (newVal) => {
                   color="edit-bg-button-color"
                   @click="openModal('edit', item.id)"
                 ></v-icon>
-                <v-icon
+                <!-- <v-icon
                   icon="fa-solid fa-trash"
                   size="small"
                   color="delete-bg-button-color"
                   @click.prevent="openModal('delete', item.id)"
-                ></v-icon>
+                ></v-icon> -->
               </template>
             </v-data-table>
           </v-col>
@@ -345,80 +332,101 @@ const onSliderHeadersChange = (newVal) => {
             >
           </div>
           <v-text-field
-            v-if="modalMode !== 'delete'"
             v-model="form.name"
             label="Name"
             variant="outlined"
             color="primary-bg-color"
+            class="mb-2"
             @click:clear="form.name = null"
             clearable
           ></v-text-field>
           <v-text-field
-            v-if="modalMode !== 'delete'"
             v-model="form.type"
             label="Type"
             variant="outlined"
             color="primary-bg-color"
+            class="mb-2"
             @click:clear="form.type = null"
             clearable
           ></v-text-field>
+          <v-radio-group class="mb-2" label="Pagination Dots" v-model="form.dots" inline>
+            <v-radio color="primary-bg-color" label="True" value="true"></v-radio>
+            <v-radio color="primary-bg-color" label="False" value="false"></v-radio>
+          </v-radio-group>
+          <v-radio-group class="mb-2" label="Arrows" v-model="form.arrows" inline>
+            <v-radio color="primary-bg-color" label="True" value="true"></v-radio>
+            <v-radio color="primary-bg-color" label="False" value="false"></v-radio>
+          </v-radio-group>
+          <v-radio-group class="mb-2" label="Accessibility" v-model="form.accessibility" inline>
+            <v-radio color="primary-bg-color" label="True" value="true"></v-radio>
+            <v-radio color="primary-bg-color" label="False" value="false"></v-radio>
+          </v-radio-group>
+          <v-radio-group class="mb-2" label="Pause on Hover" v-model="form.pause_on_hover" inline>
+            <v-radio color="primary-bg-color" label="True" value="true"></v-radio>
+            <v-radio color="primary-bg-color" label="False" value="false"></v-radio>
+          </v-radio-group>
           <v-text-field
-            v-if="modalMode !== 'delete'"
+            v-model="form.rows"
+            type="number"
+            label="Rows"
+            variant="outlined"
+            color="primary-bg-color"
+            class="mb-2"
+            @click:clear="form.rows = null"
+            clearable
+          ></v-text-field>
+          <v-text-field
+            v-model="form.slides_to_show"
+            type="number"
+            label="Slides to show"
+            variant="outlined"
+            color="primary-bg-color"
+            hint="7 is Maximum"
+            class="mb-2"
+            @click:clear="form.slides_to_show = null"
+            clearable
+          ></v-text-field>
+          <v-text-field
+            v-model="form.slides_per_row"
+            type="number"
+            label="Slides per row"
+            variant="outlined"
+            color="primary-bg-color"
+            class="mb-2"
+            @click:clear="form.slides_per_row = null"
+            clearable
+          ></v-text-field>
+          <v-text-field
+            v-model="form.autoplay_speed"
+            type="number"
+            label="Autoplay Speed"
+            variant="outlined"
+            color="primary-bg-color"
+            hint="1000 is equal to 1 second"
+            class="mb-2"
+            @click:clear="form.autoplay_speed = null"
+            clearable
+          ></v-text-field>
+          <v-text-field
             v-model="form.min_slide"
             type="number"
             label="Minimum Slide"
             variant="outlined"
             color="primary-bg-color"
+            class="mb-2"
             @click:clear="form.min = null"
             clearable
           ></v-text-field>
           <v-text-field
-            v-if="modalMode !== 'delete'"
             v-model="form.max_slide"
             type="number"
             label="Maximum Slide"
             variant="outlined"
             color="primary-bg-color"
+            class="mb-2"
             @click:clear="form.max = null"
             clearable
           ></v-text-field>
-          <!-- <v-select
-            v-model="form.slider_headers"
-            label="Slider Headers"
-            color="primary-bg-color"
-            variant="outlined"
-          >
-            <template v-slot:prepend-item>
-              <div class="d-flex align-center px-5">
-                <v-text-field
-                  v-model="sliderHeaderField"
-                  class="my-3"
-                  placeholder="Enter desired header"
-                  variant="outlined"
-                  color="primary-bg-color"
-                  density="compact"
-                  hide-details="auto"
-                  clearable
-                ></v-text-field>
-                <v-btn
-                  color="add-bg-button-color"
-                  size="small"
-                  block
-                  @click.prevent="addSliderHeader()"
-                >
-                  add header
-                </v-btn>
-              </div>
-            </template>
-            <template v-slot:chip="{ item }">
-              <v-chip color="primary-bg-color" closable>
-                {{ item.value }}
-              </v-chip>
-            </template>
-            <template v-slot:no-data>
-              <div></div>
-            </template>
-          </v-select> -->
         </template>
       </Modal>
     </v-dialog>

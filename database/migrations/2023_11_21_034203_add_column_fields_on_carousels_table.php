@@ -23,7 +23,6 @@ return new class extends Migration
             $table->integer('autoplay_speed')->default(1000)->after('slides_per_row');
             $table->string('center_padding')->default('0')->after('autoplay_speed');
             $table->string('pause_on_hover')->default('true')->after('center_padding');
-            $table->longText('slider_headers')->nullable()->after('max_slide');
         });
     }
 
