@@ -62,9 +62,9 @@ class Carousel extends Model
     public function createCarouselSlideData(array $data, $id)
     {
         $carousel = $this->getSingleCarousel($id);
-        $carouselData = $carousel->data;
-        array_push($carouselData, $data);
-        $carousel->data = $carouselData;
+        $carouselDataArray = $carousel->data->getArrayCopy() ?? [];
+        array_push($carouselDataArray, $data);
+        $carousel->data = $carouselDataArray;
         $carousel->save();
     }
 
@@ -116,7 +116,7 @@ class Carousel extends Model
         $carousel->save();
     }
 
-    private function getSingleCarousel($id)
+    public function getSingleCarousel($id)
     {
         return $this->where('id', $id)->first();
     }

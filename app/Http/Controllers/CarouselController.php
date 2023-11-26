@@ -49,15 +49,17 @@ class CarouselController extends Controller
     {
         $this->createCarouselMainImagesDirectory();
 
-        if ($request->has("id")) {
-            $data = $request->except('id', 'file');
+        if ($request->has("carousel_id")) {
+            $data = $request->except('carousel_id', 'file');
+            $carousel = $this->carouselModel->getSingleCarousel($request->carousel_id);
+            $data['sorted_order'] = count($carousel->data ?? []);
 
             if ($request->type === "main" && $request->has("file") && !empty($request->file)) {
                 $filename = $request->file("file")->getClientOriginalName();
                 $data['img_path'] = $request->file('file')->storeAs(storage_path('app/carousels') . '/main', $filename);
             }
 
-            $this->carouselModel->createCarouselSlideData($data, $request->id);
+            $this->carouselModel->createCarouselSlideData($data, $request->carousel_id);
         }
 
         return redirect()->route('carousels.index');

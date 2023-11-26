@@ -24,8 +24,8 @@ const props = defineProps({
 });
 
 const carousel = props.carousel[0];
-const slides = JSON.parse(carousel.data);
-const carouselSlides = JSON.parse(props.carousel[0].data) ?? [];
+const slides = carousel.data ?? [];
+// const carouselSlides = JSON.parse(props.carousel[0].data) ?? [];
 const showModal = ref(false);
 const modalMode = ref("default");
 const search = ref("");
@@ -38,10 +38,12 @@ const form = useForm(
     ? {
         text: null,
         pill_text: null,
+        carousel_id: carousel.id
       }
     : {
         file: null,
         image_path: null,
+        carousel_id: carousel.id
       }
 );
 const headers = computed(() => {
@@ -49,7 +51,7 @@ const headers = computed(() => {
     {
       title: "Sort Order",
       align: "start",
-      key: "sort_order",
+      key: "sorted_order",
     },
     {
       title: "Action",
@@ -90,19 +92,19 @@ const actions = reactive({
   add: {
     icon: "fa-regular fa-square-plus",
     method: "post",
-    path: "carousel.store",
+    path: "carousel.slide.store",
     action: "saved",
   },
   edit: {
     icon: "fa-solid fa-pen",
     method: "post",
-    path: "carousel.update",
+    path: "carousel.slide.update",
     action: "updated",
   },
   delete: {
     icon: "fa-solid fa-xmark",
     method: "post",
-    path: "carousel.delete",
+    path: "carousel.slide.delete",
     action: "removed",
   },
 });
@@ -212,7 +214,7 @@ const imgPath = (imageSrc) => {
           <v-col cols="11">
             <span class="card-title"
               >Carousel {{ carousel.name }} ({{
-                carouselSlides?.length ?? 0
+                slides?.length ?? 0
               }}/{{ carousel.max_slide }})</span
             >
             <span class="card-subtitle">Manage slides in these carousel.</span>
@@ -232,10 +234,10 @@ const imgPath = (imageSrc) => {
           <v-col cols="12">
             <v-data-table
               :headers="headers"
-              :items="carouselSlides"
+              :items="slides"
               item-value="name"
               v-model:items-per-page="itemsPerPage"
-              :items-length="carouselSlides.length"
+              :items-length="slides.length"
               :loading="loading"
               class="elevation-1 table"
               loading-text="Loading... Please wait"
@@ -331,44 +333,6 @@ const imgPath = (imageSrc) => {
               ></v-file-input>
             </div>
           </div>
-          <!-- <v-text-field
-            v-if="modalMode !== 'delete'"
-            v-model="form.name"
-            label="Name"
-            variant="outlined"
-            color="primary-bg-color"
-            @click:clear="form.name = null"
-            clearable
-          ></v-text-field>
-          <v-text-field
-            v-if="modalMode !== 'delete'"
-            v-model="form.type"
-            label="Type"
-            variant="outlined"
-            color="primary-bg-color"
-            @click:clear="form.type = null"
-            clearable
-          ></v-text-field>
-          <v-text-field
-            v-if="modalMode !== 'delete'"
-            v-model="form.min_slide"
-            type="number"
-            label="Minimum Slide"
-            variant="outlined"
-            color="primary-bg-color"
-            @click:clear="form.min = null"
-            clearable
-          ></v-text-field>
-          <v-text-field
-            v-if="modalMode !== 'delete'"
-            v-model="form.max_slide"
-            type="number"
-            label="Maximum Slide"
-            variant="outlined"
-            color="primary-bg-color"
-            @click:clear="form.max = null"
-            clearable
-          ></v-text-field> -->
         </template>
       </Modal>
     </v-dialog>
