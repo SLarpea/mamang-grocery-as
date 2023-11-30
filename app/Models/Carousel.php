@@ -6,6 +6,7 @@ use App\Events\CarouselEvents;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Carousel extends Model
 {
@@ -62,10 +63,11 @@ class Carousel extends Model
     public function createCarouselSlideData(array $data, $id)
     {
         $carousel = $this->getSingleCarousel($id);
-        $carouselDataArray = $carousel->data->getArrayCopy() ?? [];
+        $carouselDataArray = is_null($carousel->data) ? [] : $carousel->data->getArrayCopy();
         array_push($carouselDataArray, $data);
         $carousel->data = $carouselDataArray;
         $carousel->save();
+        Cache::forget("carousel");
     }
 
     public function edit(array $data, $id)

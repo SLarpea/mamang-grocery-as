@@ -7,6 +7,7 @@ use App\Models\Carousel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Log;
 
 class CarouselController extends Controller
 {
@@ -22,12 +23,13 @@ class CarouselController extends Controller
         CarouselEvents::dispatchIf(!cache()->has("carousels" || "carousel"), request('current'));
 
         if (!is_null(request('current'))) {
+            Log::debug(cache()->get("carousel"));
+            Log::debug(request("current"));
             return Inertia::render("Admin/Carousel", [
                 "carousel" => cache()->get("carousel"),
                 "message" => "success"
             ]);
         }
-
         
         return Inertia::render("Admin/Carousels", [
             "carousels" => cache()->get("carousels"),
@@ -62,7 +64,10 @@ class CarouselController extends Controller
             $this->carouselModel->createCarouselSlideData($data, $request->carousel_id);
         }
 
-        return redirect()->route('carousels.index');
+        // return redirect()->route('carousels.index', [
+        //     "current" => "promo"
+        // ]);
+        return to_route('carousels.index', ['current' => "promo"]);
     }
 
     public function update(Request $request)

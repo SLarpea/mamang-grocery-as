@@ -16,6 +16,7 @@ onMounted(() => {
   //       sortable: false,
   //     },
   //   ];
+  // console.log(props.carousel.data);
 });
 
 const props = defineProps({
@@ -38,12 +39,12 @@ const form = useForm(
     ? {
         text: null,
         pill_text: null,
-        carousel_id: carousel.id
+        carousel_id: carousel.id,
       }
     : {
         file: null,
         image_path: null,
-        carousel_id: carousel.id
+        carousel_id: carousel.id,
       }
 );
 const headers = computed(() => {
@@ -213,9 +214,9 @@ const imgPath = (imageSrc) => {
         >
           <v-col cols="11">
             <span class="card-title"
-              >Carousel {{ carousel.name }} ({{
-                slides?.length ?? 0
-              }}/{{ carousel.max_slide }})</span
+              >Carousel {{ carousel.name }} ({{ carousel.data?.length ?? 0 }}/{{
+                carousel.max_slide
+              }})</span
             >
             <span class="card-subtitle">Manage slides in these carousel.</span>
           </v-col>
