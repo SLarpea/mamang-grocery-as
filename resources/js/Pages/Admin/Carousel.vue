@@ -33,7 +33,7 @@ const search = ref("");
 const itemsPerPage = ref(6);
 const loading = ref(false);
 const previewImage = ref(null);
-const selectedSlideIdx = ref(null);
+// const selectedSlideIdx = ref(null);
 const form = useForm(
   carousel.type === "promo"
     ? {
@@ -110,11 +110,11 @@ const actions = reactive({
   },
 });
 
-const openModal = (mode, idx = null) => {
-  if (mode !== "add") setFormValue(idx);
+const openModal = (mode, text, data) => {
+  if (mode !== "add") setFormValue(text, data);
   modalMode.value = mode;
   showModal.value = true;
-  selectedSlideIdx.value = idx;
+  // selectedSlideIdx.value = idx;
 };
 
 const closeModal = () => {
@@ -133,10 +133,11 @@ const showToast = (title) => {
   });
 };
 
-const setFormValue = (idx) => {
-  const slide = JSON.parse(slides[idx]);
+const setFormValue = (text, data) => {
+  var key = (carousel.type === "promo") ? 'text' : 'image_path';
+  const slide = data.find((item) => item[key] === text);
   if (carousel.type === "promo") {
-    (form.id = id), (form.text = slide.text);
+    form.text = slide.text;
     form.pill_text = slide.pill_text;
   } else {
     form.image_path = slide.image_path;
@@ -180,6 +181,10 @@ const breadCrumbItems = (curr) => {
 const imgPath = (imageSrc) => {
   return imageSrc.includes("blob") ? imageSrc : APP_URL + imageSrc;
 };
+
+const items = (data) => {
+  return (data === null) ? [] : data;
+}
 
 </script>
 <template>
@@ -235,7 +240,7 @@ const imgPath = (imageSrc) => {
           <v-col cols="12">
             <v-data-table
               :headers="headers"
-              :items="slides"
+              :items="items(props.carousel[0].data)"
               item-value="name"
               v-model:items-per-page="itemsPerPage"
               :items-length="slides.length"
@@ -260,7 +265,7 @@ const imgPath = (imageSrc) => {
                   size="small"
                   class="me-2"
                   color="edit-bg-button-color"
-                  @click="openModal('edit', item.id)"
+                  @click="openModal('edit', item.text, props.carousel[0].data)"
                 ></v-icon>
                 <v-icon
                   icon="fa-solid fa-trash"

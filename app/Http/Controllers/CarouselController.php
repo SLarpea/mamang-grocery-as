@@ -25,6 +25,7 @@ class CarouselController extends Controller
         if (!is_null(request('current'))) {
             Log::debug(cache()->get("carousel"));
             Log::debug(request("current"));
+            // dd(cache()->get("carousel"));
             return Inertia::render("Admin/Carousel", [
                 "carousel" => cache()->get("carousel"),
                 "message" => "success"
