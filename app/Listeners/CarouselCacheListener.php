@@ -32,7 +32,6 @@ class CarouselCacheListener
     {
         Cache::forget("carousels");
         Cache::forget("carousel");
-        Log::debug("Event triggered!");
 
         Cache::rememberForever(empty($event->currCarousel) ? "carousels" : "carousel", function () use ($event) {
             $filter['current'] = $event->currCarousel;

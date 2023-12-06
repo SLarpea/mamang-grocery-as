@@ -5,19 +5,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { Link } from "@inertiajs/vue3";
 
-onMounted(() => {
-  //   console.log(JSON.parse(props.carousel[0].data) ?? []);
-  //   const headers = [
-  //     ...JSON.parse(props.carousel[0].slider_headers),
-  //     {
-  //       title: "Action",
-  //       align: "start",
-  //       key: "actions",
-  //       sortable: false,
-  //     },
-  //   ];
-  // console.log(props.carousel.data);
-});
+const APP_URL = import.meta.env.VITE_APP_URL;
 
 const props = defineProps({
   carousel: Object,
@@ -25,15 +13,13 @@ const props = defineProps({
 });
 
 const carousel = props.carousel[0];
-const slides = carousel.data ?? [];
-// const carouselSlides = JSON.parse(props.carousel[0].data) ?? [];
 const showModal = ref(false);
 const modalMode = ref("default");
 const search = ref("");
 const itemsPerPage = ref(6);
 const loading = ref(false);
 const previewImage = ref(null);
-// const selectedSlideIdx = ref(null);
+const selectedSlide = ref(null);
 const form = useForm(
   carousel.type === "promo"
     ? {
@@ -110,11 +96,11 @@ const actions = reactive({
   },
 });
 
-const openModal = (mode, text, data) => {
-  if (mode !== "add") setFormValue(text, data);
+const openModal = (mode, field, data) => {
+  if (mode !== "add") setFormValue(field, data);
   modalMode.value = mode;
   showModal.value = true;
-  // selectedSlideIdx.value = idx;
+  selectedSlide.value = field;
 };
 
 const closeModal = () => {
@@ -133,27 +119,30 @@ const showToast = (title) => {
   });
 };
 
-const setFormValue = (text, data) => {
-  var key = (carousel.type === "promo") ? 'text' : 'image_path';
-  const slide = data.find((item) => item[key] === text);
+const setFormValue = (field, data) => {
+  var key = carousel.type === "promo" ? "text" : "image_path";
+  const slide = data.find((item) => item[key] === field);
+  form.id = props.carousel[0].id;
   if (carousel.type === "promo") {
     form.text = slide.text;
     form.pill_text = slide.pill_text;
   } else {
+    previewImage.value = slide.image_path;
     form.image_path = slide.image_path;
   }
 };
 
-const submitForm = (mode, idx) => {
+const submitForm = (mode, text) => {
   form.submit(actions[mode].method, route(actions[mode].path), {
     onSuccess: (response) => {
       if (response.props.message === "success") {
         modalMode.value = "default";
         showModal.value = false;
         showToast(
-          `${carousel.name} slide ${idx + 1} has been ${actions[mode].action}`
+          `${carousel.name} slide ${text} has been ${actions[mode].action}`
         );
         form.reset();
+        previewImage.value = null;
       }
     },
   });
@@ -183,9 +172,8 @@ const imgPath = (imageSrc) => {
 };
 
 const items = (data) => {
-  return (data === null) ? [] : data;
-}
-
+  return data === null ? [] : data;
+};
 </script>
 <template>
   <AdminLayout title="Carousel">
@@ -219,14 +207,18 @@ const items = (data) => {
         >
           <v-col cols="11">
             <span class="card-title"
-              >Carousel {{ carousel.name }} ({{ carousel.data?.length ?? 0 }}/{{
-                carousel.max_slide
-              }})</span
+              >Carousel {{ carousel.name }} ({{
+                items(props.carousel[0].data).length ?? 0
+              }}/{{ carousel.max_slide }})</span
             >
             <span class="card-subtitle">Manage slides in these carousel.</span>
           </v-col>
           <v-col cols="1" class="text-right">
             <v-btn
+              v-if="
+                items(props.carousel[0].data).length <
+                props.carousel[0].max_slide
+              "
               size="small"
               color="add-bg-button-color"
               prepend-icon="fa-solid fa-circle-plus"
@@ -243,7 +235,7 @@ const items = (data) => {
               :items="items(props.carousel[0].data)"
               item-value="name"
               v-model:items-per-page="itemsPerPage"
-              :items-length="slides.length"
+              :items-length="items(props.carousel[0].data).length"
               :loading="loading"
               class="elevation-1 table"
               loading-text="Loading... Please wait"
@@ -265,13 +257,29 @@ const items = (data) => {
                   size="small"
                   class="me-2"
                   color="edit-bg-button-color"
-                  @click="openModal('edit', item.text, props.carousel[0].data)"
+                  @click="
+                    openModal(
+                      'edit',
+                      props.carousel[0].type === 'promo'
+                        ? item.text
+                        : item.image_path,
+                      props.carousel[0].data
+                    )
+                  "
                 ></v-icon>
                 <v-icon
                   icon="fa-solid fa-trash"
                   size="small"
                   color="delete-bg-button-color"
-                  @click.prevent="openModal('delete', item.id)"
+                  @click="
+                    openModal(
+                      'delete',
+                      props.carousel[0].type === 'promo'
+                        ? item.text
+                        : item.image_path,
+                      props.carousel[0].data
+                    )
+                  "
                 ></v-icon>
               </template>
             </v-data-table>
@@ -282,7 +290,7 @@ const items = (data) => {
     <v-dialog class="dialog" v-model="showModal" width="50rem" persistent>
       <Modal
         :mode="modalMode"
-        @submit="submitForm(modalMode, selectedSlideIdx)"
+        @submit="submitForm(modalMode, form.text)"
         @cancel="closeModal()"
       >
         <template #header>
@@ -291,9 +299,17 @@ const items = (data) => {
 
         <template #body>
           <div v-if="modalMode === 'delete'">
+            <v-img
+              v-if="previewImage && carousel.type !== 'promo'"
+              class="bg-white mb-5 mx-auto"
+              width="300"
+              :aspect-ratio="1"
+              :src="imgPath(previewImage)"
+              cover
+            ></v-img>
             <span class="deletePromptTitle"
               >Are you sure to delete this
-              <strong>{{ selectedSlideIdx + 1 }}</strong> slide?</span
+              <strong>{{ selectedSlide }}</strong> slide?</span
             >
             <span class="deletePromptSubTitle"
               >You won't be able to revert this!</span
