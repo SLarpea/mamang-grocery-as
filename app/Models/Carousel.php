@@ -67,7 +67,6 @@ class Carousel extends Model
         array_push($carouselDataArray, $data);
         $carousel->data = $carouselDataArray;
         $carousel->save();
-        Cache::forget("carousel");
     }
 
     public function edit(array $data, $id)
@@ -88,12 +87,13 @@ class Carousel extends Model
     public function editCarouselData(array $data, $id)
     {
         $carousel = $this->getSingleCarousel($id);
-        $carouselData = $carousel->data;
+        $carouselData = $carousel->data->getArrayCopy() ?? [];
+        $searchKey = ($carousel->type === "promo") ? "text" : "image_path";
 
-        $slideIdx = array_search($data['name'], array_column($carouselData, 'name'));
+        $slideIdx = array_search($data['previous_path'], array_column($carouselData, $searchKey));
 
         foreach ($data as $key => $value) {
-            $carouselData[$slideIdx][$key] = $value;
+            if ($key === 'image_path') $carouselData[$slideIdx][$key] = $value;
         }
 
         $carousel->data = $carouselData;
@@ -108,11 +108,13 @@ class Carousel extends Model
     public function removeCarouselSlide(array $data, $id)
     {
         $carousel = $this->getSingleCarousel($id);
-        $carouselData = $carousel->data;
+        $carouselData = $carousel->data->getArrayCopy() ?? [];
+        $searchKey = ($carousel->type === "promo") ? "text" : "image_path";
 
-        $slideIdx = array_search($data['name'], array_column($carouselData, 'name'));
+        $slideIdx = array_search($data[$searchKey], array_column($carouselData, $searchKey));
 
-        unset($carouselData[$slideIdx]);
+        array_splice($carouselData, $slideIdx, 1);
+        if (count($carouselData) !== 0) $carouselData = $this->adjustSortOrder($carouselData);
 
         $carousel->data = $carouselData;
         $carousel->save();
@@ -121,5 +123,13 @@ class Carousel extends Model
     public function getSingleCarousel($id)
     {
         return $this->where('id', $id)->first();
+    }
+
+    private function adjustSortOrder(array $data) {
+        foreach ($data as $key => &$value) {
+            $value['sorted_order'] = $key;
+        }
+
+        return $data;
     }
 }

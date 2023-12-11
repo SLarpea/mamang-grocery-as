@@ -7,10 +7,6 @@ import { Link } from "@inertiajs/vue3";
 
 const APP_URL = import.meta.env.VITE_APP_URL;
 
-onMounted(() => {
-    console.log("Domo");
-});
-
 const props = defineProps({
   carousels: Array,
   message: String,

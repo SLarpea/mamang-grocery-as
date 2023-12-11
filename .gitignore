@@ -5,6 +5,7 @@
 /public/products
 /public/categories
 /public/brands
+/public/carousels
 /storage/*.key
 /vendor
 .env

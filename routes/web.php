@@ -71,7 +71,7 @@ Route::middleware([
             Route::prefix('slide')->group(function () {
                 Route::post('/store', [CarouselController::class,'storeCarouselSlide'])->name('carousel.slide.store');
                 Route::post('/update', [CarouselController::class,'updateCarouselSlide'])->name('carousel.slide.update');
-                Route::post('/delete', [CarouselController::class,'removeCarouselSlide'])->name('carousel.slide.remove');
+                Route::post('/delete', [CarouselController::class,'removeCarouselSlide'])->name('carousel.slide.delete');
             });
         });
     });
