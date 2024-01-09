@@ -23,12 +23,34 @@ class Product extends Model
         "categories"
     ];
 
-    public function products()
+    public function products($searchQuery = null)
     {
-        return $this->orderBy('updated_at', 'desc')->get();
+        $query = $this;
+
+        if (!is_null($searchQuery) && array_key_exists('current', $searchQuery)) {
+            switch ($searchQuery['current']) {
+                case 'on_sale':
+                    $query->where('percent_sale', '!=', 0)
+                        ->orderBy('updated_at', 'desc');
+                    break;
+
+                case 'top_sale':
+                    $query->where('percent_sale', '!=', 0)
+                        ->orderBy('percent_sale', 'desc');
+                    break;
+
+                case 'new_arrival':
+                    $query->orderBy('created_at', 'desc');
+                    break;
+            }
+
+            return $query->get();
+        } else {
+            return $query->orderBy('updated_at', 'desc')->get();
+        }
     }
 
-    public function create(array $data) 
+    public function create(array $data)
     {
         foreach ($data as $key => $value) {
 
@@ -43,7 +65,7 @@ class Product extends Model
         $this->save();
     }
 
-    public function edit(array $data, $id) 
+    public function edit(array $data, $id)
     {
         $product = $this->getSingleProduct($id);
 
